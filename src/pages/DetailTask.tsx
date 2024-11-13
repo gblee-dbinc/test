@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Tag, Avatar, Input, Button, Space, Typography, List, Popconfirm } from 'antd';
+import { Card, Tag, Avatar, Input, Button, Space, Typography, List, Popconfirm, Tooltip } from 'antd';
 import {
   CalendarOutlined,
   UserOutlined,
@@ -10,9 +10,11 @@ import {
   CheckOutlined,
   HeartFilled,
   HeartOutlined,
-  SyncOutlined 
+  SyncOutlined, 
+  FlagOutlined
 } from '@ant-design/icons';
 
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StatusTag from '../components/StatusTag';
@@ -72,7 +74,7 @@ const DetailTask: React.FC = () => {
 
   const [task, setTask] = useState({
     taskName: '주간 리포팅 작성',
-    status: 3,
+    status: 2,
     startDate: '2024-11-01',
     dueDate: '2024-11-15',
     process: '리포팅',
@@ -142,14 +144,14 @@ const DetailTask: React.FC = () => {
     
 
     {/* 제목 */}
-    <Title level={3} style={{ margin: 0 }}>
+    <Title level={2} style={{ fontWeight:'bold', margin:0}}>
       {task.taskName}
     </Title>
     {task.isRecurring && (
     <SyncOutlined
     style={{
       fontSize: '20px',
-      color: '#52c41a',
+      color: '#c9c9c9',
       marginLeft: '8px',
       verticalAlign: 'middle', // 아이콘 수직 중앙 정렬
     }}
@@ -166,50 +168,54 @@ const DetailTask: React.FC = () => {
         {/* 상세정보 */}
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <Space align="center">
-            <CalendarOutlined style={{ fontSize: '18px', color: '#1890ff' }} />
+            <CalendarOutlined style={{ fontSize: '18px', color: '#F37920' }} />
             <Space>
-              <strong>기간</strong> 
+            <Text style={{ fontSize: '16px', fontWeight:'bold'}}>기간</Text> 
               <Text> {task.startDate} ~ {task.dueDate}</Text>
             </Space>
           </Space>
 
-          <Space>
-          <UserOutlined style={{ fontSize: '18px', color: '#52c41a' }} />
+          <Space align="center">
+          <AccountTreeOutlinedIcon style={{ fontSize: '18px', color: '#52c41a' , verticalAlign: 'middle'}} />
             <Space>
-              <strong>ITO 프로세스</strong>
+            <Text style={{ fontSize: '16px', fontWeight:'bold'}}>ITO 프로세스</Text>
               <Tag
-      color={processColors[task.process]}
-      style={{
-        // fontSize: '16px',
-        padding: '3px 6px',
-        borderRadius: '16px',
-        margin: '0 12px',
-      }}
-    >
-      {task.process}
-    </Tag>
+                color={processColors[task.process]}
+                style={{
+                    padding: '3px 6px',
+                    borderRadius: '3px',
+                    margin: '0 12px',
+                }}
+                >
+                {task.process}
+                </Tag>
             </Space>
           
           </Space>
 
-          <Space align="center">
-            <UserOutlined style={{ fontSize: '18px', color: '#52c41a' }} />
+          <Space align="center" style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <UserOutlined style={{ fontSize: '18px', color: '#1890ff' }} />
             <Space>
-              <strong>담당자</strong>
+            <Text style={{ fontSize: '16px', fontWeight:'bold'}}>담당자</Text>
               <Avatar src={task.assignee.profile} />
               <Text> {task.assignee.name}</Text>
               {task.confirmationAssignee==='N'
-              ?<RadioButtonUncheckedIcon/>
-              :<CheckCircleIcon/>
+              ?<Tooltip title="담당자 확인 전" color={'#c9c9c9'} placement="right">
+                <RadioButtonUncheckedIcon style={{color:'#c9c9c9', verticalAlign: 'middle'}}/>
+              </Tooltip>
+              :<Tooltip title="담당자 확인 완료" color={'#006AFF'} placement="right">
+                <CheckCircleIcon style={{color:'#006AFF', verticalAlign: 'middle'}}/>
+            </Tooltip>
             }
               
             </Space>
           </Space>
 
           <Space>
-          <UserOutlined style={{ fontSize: '18px', color: '#52c41a' }} />
+          <FlagOutlined style={{ fontSize: '18px', color: '#00844A' }} />
             <Space>
-              <strong>상태</strong>
+            <Text style={{ fontSize: '16px', fontWeight:'bold'}}>상태</Text>
               <div>
      {StatusTag(task.status)}
   </div>
@@ -218,7 +224,7 @@ const DetailTask: React.FC = () => {
           <Space align="center">
             <FileTextOutlined style={{ fontSize: '18px', color: '#722ed1' }} />
             <Space>
-              <strong>내용</strong> 
+            <Text style={{ fontSize: '16px', fontWeight:'bold'}}>내용</Text>
               <Text> {task.description}</Text>
             </Space>
           </Space>
@@ -226,14 +232,20 @@ const DetailTask: React.FC = () => {
 
         {/* 버튼 */}
         <div style={{ marginTop: '20px', textAlign: 'right' }}>
-          <Button
-            type="primary"
-            icon={<CheckOutlined />}
-            onClick={handleChangeStatusToComplete}
-            style={{ marginRight: '8px' }}
-          >
-            완료
-          </Button>
+        {
+            task.status!==2?
+                <Button
+                type="primary"
+                icon={<CheckOutlined />}
+                onClick={handleChangeStatusToComplete}
+                style={{ marginRight: '8px' }}
+                >
+                완료
+                </Button>
+              :<></>
+        }
+          
+
           <Button
             type="default"
             icon={<EditOutlined />}

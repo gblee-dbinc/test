@@ -1,29 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Row, Col } from 'antd';
+import { List, Avatar, Tag, Typography, Calendar, Card ,Layout, Button} from 'antd';
+import { CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import '../styles/pages/Dashboard.css'
-const { Sider, Content } = Layout;
+import Stat from "../components/Stat";
+import TaskList from "../components/TaskList";
+import CalendarList from "../components/CalendarList";
 
+const { Content } = Layout;
+const { Text, Title } = Typography;
 
 const Dashboard = () => {
+    
   return (
-    <Layout style={{ minHeight: '100vh', padding: '0' }}>
-      {/* 사이드바 */}
-      <Sider width={250} style={{backgroundColor: '#F8F7F1'}}>
-        
-      </Sider>
+    <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection:'row' }}>
+    {/* 왼쪽 고정 영역 */}
+    <Stat/>
 
-      {/* 오른쪽 컨텐츠 영역 */}
-      <Layout style={{ padding: '20px' }}>
-        <Content style={{  margin: 0, minHeight: 280 }}>
-          <Row gutter={[24, 24]}>
-            <Col span={24}>
-              {/* Stat 컴포넌트를 표시 */}
-              
-            </Col>
-          </Row>
-        </Content>
-      </Layout>
+    {/* 오른쪽 컨텐츠 영역 */}
+    <Layout style={{ flex: 1, overflow: 'hidden' }}>
+      <Content
+        style={{
+          padding: '20px',
+          backgroundColor: '#fff',
+          minHeight: '100vh',
+          display: 'flex',
+          overflowY: 'auto',
+        }}
+      >
+        {/* 오른쪽 영역 내용 */}
+        <div
+      style={{
+        padding: '0 20px',
+        backgroundColor: '#fff',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+      }}
+    >
+      {/* 상단 버튼 */}
+      <div style={{ textAlign: 'right' }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }}
+              >
+                업무 추가하기
+              </Button>
+            </div>
+      
+      {/* 상단 업무 리스트 */}
+      <Card style={{ flex: 1}}>
+        <Title level={4} style={{ margin:0 }}>업무 리스트</Title>
+        <TaskList/>
+      </Card>
+
+      {/* 하단 캘린더와 업무 리스트 */}
+      <CalendarList/>
+    </div>
+      </Content>
     </Layout>
+  </Layout>
   )
 }
 

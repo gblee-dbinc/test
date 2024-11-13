@@ -40,7 +40,7 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
 
   return (
     <Sider
-      width={200}
+      width={220}
       collapsedWidth={80}
       collapsible
       collapsed={collapsed} // 부모에서 전달된 상태 사용
@@ -82,6 +82,7 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
         inlineCollapsed={collapsed} // collapsed 상태에 맞게 동작
         style={{
           backgroundColor: '#393939',
+          
         }}
       >
         <Menu.Item
@@ -93,9 +94,10 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
               display: 'flex', // 아이콘 정렬을 위해 Flexbox 사용
               alignItems: 'center', // 세로 중앙 정렬
               justifyContent: 'center', // 가로 중앙 정렬
+              
             }}/>}
         >
-          <Link to="/">대시보드</Link>
+          <Link to="/" >대시보드</Link>
         </Menu.Item>
         <Menu.Item
           key="/tasks"

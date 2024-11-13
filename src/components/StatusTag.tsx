@@ -8,42 +8,38 @@ const StatusTag= (status:number) => {
       return (
         <Tag
           icon={<ClockCircleOutlined />}
-          color="default"
+          color="#D1D1D1"
           style={{
             padding: '4px 12px',
-            borderRadius: '4px',
-            fontSize: '14px',
-            fontWeight: '500',
+            borderRadius: '50px'            
           }}
         >
-          시작전
+          시작 전
         </Tag>
       );
     case 1:
       return (
         <Tag
           icon={<SyncOutlined spin />}
-          color="processing"
+          color="#006AFF"
           style={{
             padding: '4px 12px',
-            borderRadius: '4px',
-            fontSize: '14px',
-            fontWeight: '500',
+            borderRadius: '50px',
+            
           }}
         >
-          진행중
+          진행 중
         </Tag>
       );
     case 2:
       return (
         <Tag
           icon={<CheckCircleOutlined />}
-          color="success"
+          color="#7FC043"
           style={{
             padding: '4px 12px',
             borderRadius: '50px',
-            fontSize: '14px',
-            fontWeight: '500',
+            
           }}
         >
           완료
@@ -53,12 +49,11 @@ const StatusTag= (status:number) => {
       return (
         <Tag
           icon={<ExclamationCircleOutlined />}
-          color="#DB4A26"
+          color="#F45959"
           style={{
             padding: '4px 12px',
             borderRadius: '50px',
-            fontSize: '14px',
-            fontWeight: '500',
+            
           }}
         >
           지연
