@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Tag, Avatar, Typography } from 'antd';
-import '../styles/components/TaskList.css'; // CSS 파일 추가
+import '../styles/components/List.css'; // CSS 파일 추가
 
 const { Text } = Typography;
 
@@ -42,7 +42,7 @@ const tasks = [
   },
 ];
 
-const TaskList = () => {
+const List = () => {
   const columns = [
     {
       title: 'No.',
@@ -60,6 +60,7 @@ const TaskList = () => {
         <div
           style={{
             backgroundColor: '#f5f5f5',
+            width:'100%',
             borderRadius: '8px',
             padding: '4px 8px',
             textAlign: 'center',
@@ -124,4 +125,4 @@ const TaskList = () => {
   );
 };
 
-export default TaskList;
+export default List;

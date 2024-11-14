@@ -44,7 +44,7 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
       collapsedWidth={80}
       collapsible
       collapsed={collapsed} // 부모에서 전달된 상태 사용
-      onCollapse={(collapsed) => onCollapse(collapsed)} // 상태 업데이트 콜백
+      onCollapse={(collapsed: boolean) => onCollapse(collapsed)} // 상태 업데이트 콜백
       trigger={null}
       breakpoint="lg"
       style={{

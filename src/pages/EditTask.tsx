@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Input, DatePicker, Select, Button, Checkbox, Avatar, Space, Tag, Switch, Radio } from 'antd';
+import { Form, Input, DatePicker, Select, Button, Checkbox, Avatar, Space, Tag, Switch, Radio,FormInstance } from 'antd';
 import { useLocation } from 'react-router-dom';
 import { CalendarOutlined, AppstoreAddOutlined, UserOutlined, EditOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
@@ -59,7 +59,7 @@ const EditTask = () => {
   const location = useLocation();
   const { task }: { task: Task } = location.state || {};
 
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormInstance>(); //
 
   const [taskName, setTaskName] = useState<string>('');
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -94,17 +94,18 @@ const EditTask = () => {
   
   useEffect(() => {
     if (task) {
-      form.setFieldsValue({
-        taskName: task.taskName,
-        process: task.process,
-        startDate: dayjs(task.startDate),
-        dueDate: dayjs(task.dueDate),
-        assignee: task.assignee.name,
-        description: task.description,
-        isRecurring: task.isRecurring,
-      });
+      // form.setFieldsValue({
+      //   taskName: task.taskName,
+      //   processId: task.process, // 'process' 대신 'processId'로 수정
+      //   startDate: dayjs(task.startDate),
+      //   dueDate: dayjs(task.dueDate),
+      //   assigneeIds: task.assignee?.asigneeId, // 'assignee' 대신 'assigneeIds'로 수정
+      //   description: task.description,
+      //   isRecurring: task.isRecurring,
+      // });
     }
   }, [task, form]);
+  
 
   const handleSubmit = (values: any) => {
     console.log('Updated task:', values);
@@ -205,6 +206,7 @@ const fetchUsers = async (projectId: string) => {
           <Input placeholder="제목을 입력하세요" />
         </Form.Item>
 
+
       {/* 시작일 및 종료일 */}
       <Form.Item
   label="기간"
@@ -273,7 +275,7 @@ const fetchUsers = async (projectId: string) => {
   <Select
     placeholder="프로세스를 선택하세요"
     value={processId}
-    onChange={(value) => setProcessId(value)}
+    onChange={(value: string) => setProcessId(value)}
     allowClear
   >
     <Select.Option value="1">리포팅</Select.Option>

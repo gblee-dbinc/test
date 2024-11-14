@@ -9,13 +9,15 @@ import {
   Radio,
   Select,
   Space,
-  Avatar
+  Avatar,
+  FormInstance
 } from 'antd';
 import { addTask } from '../api/task/addTask';
 import { getUserByProjectId } from '../api/user/getUserByProjectId';
 import { getProjectsByProjectId } from '../api/user/getProjectsByProjectId';
 import dayjs from 'dayjs';
 import styles from '../styles/pages/AddTask.module.css';
+import '../styles/pages/AddTask.css';
 import { useNavigate } from "react-router-dom";
 import addTaskIcon from '../styles/images/AddtaskIcon.png'
 
@@ -56,7 +58,8 @@ interface Project {
 
 const AddTask: React.FC = () => {
 
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormInstance>(); //
+
 
   const [taskName, setTaskName] = useState<string>('');
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -186,8 +189,8 @@ const AddTask: React.FC = () => {
     switch (frequencyType) {
       case 'daily':
         return (
-          <>
-      {/* "일 마다" 입력 필드 한 줄로 배치 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', border:'1px solid #000', justifyContent:'center' }}>
+             {/* "일 마다" 입력 필드 한 줄로 배치 */}
       <Form.Item>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           
@@ -197,7 +200,7 @@ const AddTask: React.FC = () => {
             noStyle
             rules={[{ required: true, message: '일 수를 입력하세요.' }]}
           >
-            <Input type="number" min={1} placeholder="1" style={{ width: '100px' }} />
+            <Input size="large" type="number" min={1} placeholder="1" style={{ width: '100px' }} />
             <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>일 마다</label>
           </Form.Item>
         </div>
@@ -206,13 +209,15 @@ const AddTask: React.FC = () => {
       {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
       <Form.Item>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          
+
           <Radio.Group
             value={hasEndDate}
             onChange={(e) => setHasEndDate(e.target.value)}
             style={{ display: 'flex', alignItems: 'center' }}
           >
-            <Radio value={false}>종료일 없음</Radio>
-            <Radio value={true}>종료일 있음</Radio>
+            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
+            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
           </Radio.Group>
 
           {hasEndDate && (
@@ -221,12 +226,12 @@ const AddTask: React.FC = () => {
               noStyle
               rules={[{ required: true, message: '종료일을 선택하세요.' }]}
             >
-              <DatePicker placeholder="종료일 선택" />
+              <DatePicker size="large" placeholder="종료일 선택" />
             </Form.Item>
           )}
         </div>
       </Form.Item>
-    </>
+          </div>
         );
       case 'weekly':
         return (
@@ -240,12 +245,12 @@ const AddTask: React.FC = () => {
             noStyle
             rules={[{ required: true, message: '주 수를 입력하세요.' }]}
           >
-            <Input type="number" min={1} placeholder="1" style={{ width: '100px' }} />
+            <Input size="large" type="number" min={1} placeholder="1" style={{ width: '100px' }} />
             <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>주 마다</label>
           </Form.Item>
         </div>
       </Form.Item>
-          <Form.Item name="weeklyDays">
+          <Form.Item name="weeklyDays" style={{ width: '100%', display:'flex', justifyContent: 'center' }}>
             <Checkbox.Group
               options={[
                 { label: '일', value: 'SUNDAY' },
@@ -257,19 +262,19 @@ const AddTask: React.FC = () => {
                 { label: '토', value: 'SATURDAY' },
               ]}
               value={weeklyDay}
-              onChange={(checkedValues) => setWeeklyDay(checkedValues as string[])}
+              onChange={(checkedValues: string[]) => setWeeklyDay(checkedValues)}
             />
           </Form.Item>
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
       <Form.Item>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Radio.Group
+        <Radio.Group
             value={hasEndDate}
             onChange={(e) => setHasEndDate(e.target.value)}
             style={{ display: 'flex', alignItems: 'center' }}
           >
-            <Radio value={false}>종료일 없음</Radio>
-            <Radio value={true}>종료일 있음</Radio>
+            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
+            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
           </Radio.Group>
 
           {hasEndDate && (
@@ -278,7 +283,7 @@ const AddTask: React.FC = () => {
               noStyle
               rules={[{ required: true, message: '종료일을 선택하세요.' }]}
             >
-              <DatePicker placeholder="종료일 선택" />
+              <DatePicker size="large" placeholder="종료일 선택" />
             </Form.Item>
           )}
         </div>
@@ -297,7 +302,7 @@ const AddTask: React.FC = () => {
             noStyle
             rules={[{ required: true, message: '개월 수를 입력하세요.' }]}
           >
-            <Input type="number" min={1} placeholder="1" style={{ width: '100px' }} />
+            <Input size="large" type="number" min={1} placeholder="1" style={{ width: '100px' }} />
             <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>개월 마다</label>
           </Form.Item>
         </div>
@@ -313,13 +318,13 @@ const AddTask: React.FC = () => {
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
       <Form.Item>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Radio.Group
+        <Radio.Group
             value={hasEndDate}
             onChange={(e) => setHasEndDate(e.target.value)}
             style={{ display: 'flex', alignItems: 'center' }}
           >
-            <Radio value={false}>종료일 없음</Radio>
-            <Radio value={true}>종료일 있음</Radio>
+            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
+            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
           </Radio.Group>
 
           {hasEndDate && (
@@ -328,7 +333,7 @@ const AddTask: React.FC = () => {
               noStyle
               rules={[{ required: true, message: '종료일을 선택하세요.' }]}
             >
-              <DatePicker placeholder="종료일 선택" />
+              <DatePicker size="large" placeholder="종료일 선택" />
             </Form.Item>
           )}
         </div>
@@ -349,14 +354,14 @@ const AddTask: React.FC = () => {
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
       <Form.Item>
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <Radio.Group
-          value={hasEndDate}
-          onChange={(e) => setHasEndDate(e.target.value)}
-          style={{ display: 'flex', alignItems: 'center' }}
-        >
-          <Radio value={false}>종료일 없음</Radio>
-          <Radio value={true}>종료일 있음</Radio>
-        </Radio.Group>
+      <Radio.Group
+            value={hasEndDate}
+            onChange={(e) => setHasEndDate(e.target.value)}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
+            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
+          </Radio.Group>
 
         {hasEndDate && (
           <Form.Item
@@ -364,7 +369,7 @@ const AddTask: React.FC = () => {
             noStyle
             rules={[{ required: true, message: '종료일을 선택하세요.' }]}
           >
-            <DatePicker placeholder="종료일 선택" />
+            <DatePicker size="large" placeholder="종료일 선택" />
           </Form.Item>
         )}
       </div>
@@ -424,7 +429,7 @@ const AddTask: React.FC = () => {
           name="taskName"
           rules={[{ required: true, message: '제목을 입력하세요.' }]}
         >
-          <Input placeholder="제목을 입력하세요" />
+          <Input placeholder="제목을 입력하세요" size="large"/>
         </Form.Item>
 
       {/* 시작일 및 종료일 */}
@@ -440,7 +445,7 @@ const AddTask: React.FC = () => {
       style={{ marginBottom: 0 }}
       rules={[{ required: true, message: '시작일을 선택하세요.' }]}
     >
-      <DatePicker placeholder="시작일 선택" />
+      <DatePicker size="large" placeholder="시작일 선택" />
     </Form.Item>
     <span>~</span>
     {/* 종료일 */}
@@ -449,7 +454,7 @@ const AddTask: React.FC = () => {
       style={{ marginBottom: 0 }}
       rules={[{ required: true, message: '마감일을 선택하세요.' }]}
     >
-      <DatePicker placeholder="마감일 선택" />
+      <DatePicker size="large" placeholder="마감일 선택" />
     </Form.Item>
 
     {/* 반복 여부 */}
@@ -465,25 +470,39 @@ const AddTask: React.FC = () => {
 
     {/* 반복 설정 */}
     {isRecurring && (
-      <>
-        <Form.Item
-          label=""
-          name="frequencyType"
+      <div style={{ 
+        width: '100%', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: '16px', 
+        border: '1px solid #000', 
+        justifyContent: 'center' 
+    }}>
+      <Form.Item
+        label=""
+        name="frequencyType"
+        rules={[{ required: true, message: '반복 유형을 선택하세요.' }]}
+        style={{ width: '100%', display:'flex', justifyContent: 'center' }}
+      >
           
-          rules={[{ required: true, message: '반복 유형을 선택하세요.' }]}
-        >
           <Radio.Group
-            onChange={(e) => setFrequencyType(e.target.value)}
+            onChange={(e) => setFrequencyType((e.target.value))}
             value={frequencyType}
+            style={{
+              width: '100%',
+              display: 'flex', // 버튼들을 한 줄로 정렬
+              
+            }}
           >
-            <Radio.Button value="daily">매일</Radio.Button>
-            <Radio.Button value="weekly">매주</Radio.Button>
-            <Radio.Button value="monthly">매월</Radio.Button>
-            <Radio.Button value="yearly">매년</Radio.Button>
+            <Radio.Button  style={{ flex: '1', textAlign: 'center', whiteSpace:'nowrap' }} value="daily">매일</Radio.Button>
+            <Radio.Button  style={{ flex: '1', textAlign: 'center', whiteSpace:'nowrap' }} value="weekly">매주</Radio.Button>
+            <Radio.Button  style={{ flex: '1', textAlign: 'center', whiteSpace:'nowrap' }} value="monthly">매월</Radio.Button>
+            <Radio.Button  style={{ flex: '1', textAlign: 'center', whiteSpace:'nowrap' }} value="yearly">매년</Radio.Button>
           </Radio.Group>
         </Form.Item>
         {handleFrequencyOptions()}
-      </>
+      </div>
     )}
 
 {/* 프로세스 */}
@@ -494,8 +513,9 @@ const AddTask: React.FC = () => {
 >
   <Select
     placeholder="프로세스를 선택하세요"
+    size="large"
     value={processId}
-    onChange={(value) => setProcessId(value)}
+    onChange={(value:string) => setProcessId(value)}
     allowClear
   >
     <Select.Option value="1">리포팅</Select.Option>
@@ -517,6 +537,7 @@ const AddTask: React.FC = () => {
           rules={[{ required: true, message: '프로젝트를 선택하세요.' }]}
         >
           <Select
+          size="large"
             placeholder="프로젝트를 선택하세요"
             onChange={handleProjectChange}
           >
@@ -535,6 +556,7 @@ const AddTask: React.FC = () => {
           rules={[{ required: true, message: '담당자를 선택하세요.' }]}
         >
           <Select
+          size="large"
       mode="multiple"
       style={{ width: '100%' }}
       placeholder="Select users"
@@ -557,16 +579,16 @@ const AddTask: React.FC = () => {
           name="description"
           rules={[{ required: true, message: '내용을 입력하세요.' }]}
         >
-          <Input.TextArea rows={4} placeholder="내용을 입력하세요" />
+          <Input.TextArea rows={4} placeholder="내용을 입력하세요" size="large"/>
         </Form.Item>
 
         {/* 버튼 */}
         <Form.Item>
           <Space>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" size="large">
               등록
             </Button>
-            <Button htmlType="button" onClick={() => form.resetFields()}>
+            <Button htmlType="button" onClick={() => form.resetFields()} size="large">
               취소
             </Button>
           </Space>
