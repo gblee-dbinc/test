@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Form, Input, Button, Avatar, Upload, message, Typography, Space, Divider, Tag, Select } from 'antd';
 import TuneIcon from '@mui/icons-material/Tune';
-import { UserOutlined, UploadOutlined } from '@ant-design/icons';
+import { UserOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd';
 import { Option } from 'antd/es/mentions';
 
@@ -39,19 +39,18 @@ const Settings = () => {
 
   return (
     <div
-      style={{
+    style={{padding: '40px 0'}}>
+      <Card bordered={false} style={{
         maxWidth: '800px',
-        margin: '0 auto',
+        margin: 'auto',
         padding: '20px',
         backgroundColor: '#fff',
         borderRadius: '8px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-      }}
-    >
-      <Card bordered={false}>
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
           <Avatar
-            size={100}
+            size={80}
             src={profileImage || 'https://via.placeholder.com/100'}
             icon={!profileImage && <UserOutlined />}
             style={{ marginRight: '20px' }}
@@ -78,7 +77,16 @@ const Settings = () => {
               <Input size="large"/>
             </Form.Item>
             <Form.Item label="직급" name="position" rules={[{ required: true, message: '직급을 입력해주세요.' }]}>
-              <Input size="large"/>
+              <Select size="large" style={{ flex: 1, minWidth: '150px' }} allowClear>
+                <Option value="프로">프로</Option>
+                <Option value="유닛장">유닛장</Option>
+                <Option value="담당">담당</Option>
+                <Option value="팀장">팀장</Option>
+                <Option value="사원">사원</Option>
+                <Option value="대리">대리</Option>
+                <Option value="과장">과장</Option>
+                <Option value="차장">차장</Option>
+              </Select>
             </Form.Item>
             <Form.Item
               label="이메일"
@@ -119,7 +127,7 @@ const Settings = () => {
               <Input size="large"/>
             </Form.Item>
 
-            <Form.Item>
+            <Form.Item style={{display:'flex', width:'100%', justifyContent:'right'}}>
               <Button size="large" type="primary" htmlType="submit">
                 저장
               </Button>
@@ -138,25 +146,30 @@ const Settings = () => {
         ) : (
           <Space direction="vertical" size="large" style={{ width: '100%' }}>
             <div>
-              <Text strong>이메일:</Text> {userInfo.email}
+              <Text strong style={{fontSize:'18px', marginRight:'10px'}}>이메일:</Text> 
+              <Text style={{fontSize:'16px'}}>{userInfo.email}</Text>
             </div>
             <div>
-              <Text strong>소속 프로젝트:</Text>{' '}
+              <Text strong style={{fontSize:'18px', marginRight:'10px'}}>프로젝트:</Text>{' '}
               {userInfo.projects.map((project, index) => (
                 <Tag key={index} color="blue" style={{ marginBottom: '5px' }}>
-                  {project}
+                  <span style={{fontSize:'16px'}}>{project}</span>
                 </Tag>
               ))}
             </div>
             <div>
-              <Text strong>파트:</Text> {userInfo.part}
+              <Text strong style={{fontSize:'18px', marginRight:'10px'}}>파트:</Text> 
+              <Text style={{fontSize:'16px'}}>{userInfo.part}</Text>
             </div>
             <div>
-              <Text strong>전화번호:</Text> {userInfo.phone}
+              <Text strong style={{fontSize:'18px', marginRight:'10px'}}>전화번호:</Text> 
+              <Text style={{fontSize:'16px'}}>{userInfo.phone}</Text>
             </div>
-            <Button type="default" onClick={() => setEditing(true)}>
-              수정
+            <div style={{display:'flex', width:'100%', justifyContent:'right'}}>
+            <Button icon={<EditOutlined />} size="large"  type="default" onClick={() => setEditing(true)}>
+              정보 수정
             </Button>
+            </div>
           </Space>
         )}
       </Card>

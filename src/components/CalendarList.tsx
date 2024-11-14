@@ -111,6 +111,7 @@ const CalendarList = () => {
         <div
           style={{
             backgroundColor: '#f5f5f5',
+            width:'100%',
             borderRadius: '8px',
             padding: '4px 8px',
             textAlign: 'center',

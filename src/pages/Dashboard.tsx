@@ -4,12 +4,18 @@ import '../styles/pages/Dashboard.css'
 import Stat from "../components/Stat";
 import TaskList from "../components/List";
 import CalendarList from "../components/CalendarList";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 const { Title } = Typography;
 
 const Dashboard = () => {
     
+  const navigation = useNavigate();
+  const goToAddTaskPage = () => {
+    navigation('/tasks/add');
+  }
+
   return (
     <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection:'row'  }}>
     {/* 왼쪽 고정 영역 */}
@@ -37,6 +43,7 @@ const Dashboard = () => {
                 type="primary"
                 icon={<AddTaskIcon />}
                 style={{ marginRight: '8px' }}
+                onClick={goToAddTaskPage}
               >
                 업무 추가하기
               </Button>
