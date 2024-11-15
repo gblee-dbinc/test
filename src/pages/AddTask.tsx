@@ -43,6 +43,31 @@ const userListData = [
   },
 ];
 
+const projectListData = [
+  {
+    projectId: '10',
+    name: '생명인프라팀',
+    description: 'DB Inc. 생명인프라팀', // 예제 프로필 이미지 URL
+  },
+  {
+    projectId: '20',
+    name: '손보인프라팀',
+    description: 'DB Inc. 손보인프라팀',
+  },
+  {
+    projectId: '30',
+    name: 'IDC 사업팀',
+    description: 'DB Inc. IDC 사업팀',
+  },
+  {
+    projectId: '40',
+    name: '정보보안팀',
+    description: 'DB Inc. 정보보안팀',
+  },
+];
+
+
+
 
 
 interface Project {
@@ -50,47 +75,50 @@ interface Project {
   projectId: string;
   name: string;
   description: string;
-  smtpUrl?: string;
-  smtpId?: string;
-  smtpPw?: string;
 
 }
 
 const AddTask: React.FC = () => {
 
-  const [form] = Form.useForm<FormInstance>(); //
+  const [form] = Form.useForm(); //
 
 
-  const [taskName, setTaskName] = useState<string>('');
-  const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
+//   const [taskName, setTaskName] = useState<string>('');
+//   //const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+
+  
+
   const [processId, setProcessId] = useState<string>('');
   const [projectId, setProjectId] = useState<string>('');
-  const [assigneeId, setAssigneeId] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
+//   const [assigneeId, setAssigneeId] = useState<string>('');
+//   const [description, setDescription] = useState<string>('');
     
     
-  // userList의 타입을 User[]로 설정
-  const [userList, setUserList] = useState<User[]>(userListData);
-  const [projectList, setProjectList] = useState<Project[]>([]); // 여러 프로젝트 지원을 위한 배열
+//   // userList의 타입을 User[]로 설정
+   const [userList, setUserList] = useState<User[]>(userListData);
+  const [projectList, setProjectList] = useState<Project[]>(projectListData); // 여러 프로젝트 지원을 위한 배열
   
 
 
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
-  const [frequencyType, setFrequencyType] = useState<string>('daily');
-  const [hasEndDate, setHasEndDate] = useState(false);
-  const [frequencyInterval, setFrequencyInterval] = useState<number>(1);
-  const [dailyFrequencyInterval, setDailyFrequencyInterval] = useState<string>('1');
-  const [weeklyFrequencyInterval, setWeeklyFrequencyInterval] = useState<string>('1');
-  const [monthlyFrequencyInterval, setMonthlyFrequencyInterval] = useState<string>('1');
-  const [weeklyDay, setWeeklyDay] = useState<string[]>([]);
-  const [monthlyDayOfMonth, setMonthlyDayOfMonth] = useState<number | null>(null);
-  const [monthlyWeekOfMonth, setMonthlyWeekOfMonth] = useState<number | null>(null);
-  const [monthlyDayOfWeek, setMonthlyDayOfWeek] = useState<string>('');
-  const [yearlyMonth, setYearlyMonth] = useState<number | null>(null);
-  const [yearlyDayOfMonth, setYearlyDayOfMonth] = useState<number | null>(null);
-  const [yearlyWeekOfMonth, setYearlyWeekOfMonth] = useState<number | null>(null);
-  const [yearlyDayOfWeek, setYearlyDayOfWeek] = useState<string>('');
+    const [frequencyType, setFrequencyType] = useState<string>('daily');
+    const [hasEndDate, setHasEndDate] = useState(false);
+//   const [frequencyInterval, setFrequencyInterval] = useState<number>(1);
+//   const [dailyFrequencyInterval, setDailyFrequencyInterval] = useState<string>('1');
+//   const [weeklyFrequencyInterval, setWeeklyFrequencyInterval] = useState<string>('1');
+//   const [monthlyFrequencyInterval, setMonthlyFrequencyInterval] = useState<string>('1');
+ 
+const [monthlyOption, setMonthlyOption] = useState<string>('monthlyDayOfMonth');
+//   const [monthlyDayOfMonth, setMonthlyDayOfMonth] = useState<number | null>(null); 옵션1)몇일
+//   const [monthlyWeekOfMonth, setMonthlyWeekOfMonth] = useState<number | null>(null); 옵션2-1)몇번째
+//   const [monthlyDayOfWeek, setMonthlyDayOfWeek] = useState<string>(''); 옵션2-2)몇요일
+
+  const [yearlyOption, setYearlyOption]  = useState<string>('yearlyDayOfMonth')
+  const [yearlyMonth, setYearlyMonth] = useState<number | null>(null); //공통)몇월
+  const [yearlyDayOfMonth, setYearlyDayOfMonth] = useState<number | null>(null); //옵션1)몇일
+  const [yearlyWeekOfMonth, setYearlyWeekOfMonth] = useState<number | null>(null); //옵션2-1)몇번째
+  const [yearlyDayOfWeek, setYearlyDayOfWeek] = useState<string>(''); //옵션2-2)몇요일
 
     const navigate = useNavigate();
 
@@ -106,73 +134,73 @@ const AddTask: React.FC = () => {
     
 
 
-    const dayMapping: Record<string, string> = {
-      '일': 'SUNDAY',
-      '월': 'MONDAY',
-      '화': 'TUESDAY',
-      '수': 'WEDNESDAY',
-      '목': 'THURSDAY',
-      '금': 'FRIDAY',
-      '토': 'SATURDAY',
-  };
+//   //   const dayMapping: Record<string, string> = {
+//   //     '일': 'SUNDAY',
+//   //     '월': 'MONDAY',
+//   //     '화': 'TUESDAY',
+//   //     '수': 'WEDNESDAY',
+//   //     '목': 'THURSDAY',
+//   //     '금': 'FRIDAY',
+//   //     '토': 'SATURDAY',
+//   // };
   
-  const numberToDay: Record<number, string> = {
-      0: '일',
-      1: '월',
-      2: '화',
-      3: '수',
-      4: '목',
-      5: '금',
-      6: '토',
-  };
+//   const numberToDay: Record<number, string> = {
+//       0: '일',
+//       1: '월',
+//       2: '화',
+//       3: '수',
+//       4: '목',
+//       5: '금',
+//       6: '토',
+//   };
   
 
-  const fetchProjects = async () => {
-    try {
-      const userInfo = sessionStorage.getItem('userInfo')
-        ? JSON.parse(sessionStorage.getItem('userInfo') as string)
-        : null;
-      const resProjectList = await getProjectsByProjectId(userInfo.projectId);
-      setProjectList(resProjectList);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
-  };
+//   const fetchProjects = async () => {
+//     try {
+//       const userInfo = sessionStorage.getItem('userInfo')
+//         ? JSON.parse(sessionStorage.getItem('userInfo') as string)
+//         : null;
+//       const resProjectList = await getProjectsByProjectId(userInfo.projectId);
+//       setProjectList(resProjectList);
+//     } catch (error) {
+//       console.error('Error fetching projects:', error);
+//     }
+//   };
 
-  const fetchUsers = async (projectId: string) => {
-    try {
-      const resUserList = await getUserByProjectId(projectId);
-      setUserList(resUserList || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
+//   const fetchUsers = async (projectId: string) => {
+//     try {
+//       const resUserList = await getUserByProjectId(projectId);
+//       setUserList(resUserList || []);
+//     } catch (error) {
+//       console.error('Error fetching users:', error);
+//     }
+//   };
 
-  const handleChange = (value: string[]) => {
-    console.log('Selected users:', value);
-  };
+//   const handleChange = (value: string[]) => {
+//     console.log('Selected users:', value);
+//   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+//   useEffect(() => {
+//     fetchProjects();
+//   }, []);
 
-  const handleProjectChange = (value: string) => {
-    fetchUsers(value);
-  };
+//   const handleProjectChange = (value: string) => {
+//     fetchUsers(value);
+//   };
 
-  function getWeekOfMonthForSpecificDay(date:Date) {
-    const dayOfWeek = date.getDay(); // 요일 (0: 일요일, 1: 월요일, ..., 6: 토요일)
+  function getWeekOfMonthForSpecificDay(date:dayjs.Dayjs) {
+    const dayOfWeek = date.day(); // 요일 (0: 일요일, 1: 월요일, ..., 6: 토요일)
     let count = 0;
   
     // 해당 월의 첫 날부터 날짜를 증가시키며 해당 요일에 도달할 때마다 count 증가
-    for (let d = 1; d <= date.getDate(); d++) {
-        const currentDay = new Date(date.getFullYear(), date.getMonth(), d);
-        
-        if (currentDay.getDay() === dayOfWeek) {
+    for (let d = 1; d <= date.date(); d++) {
+        //const currentDay = dayjs(date.year(), date.month()+1, d);
+        const currentDay = dayjs(date).set('date', d); // 날짜를 변경
+        if (currentDay.day() === dayOfWeek) {
             count++;
         }
   
-        if (currentDay.getDate() === date.getDate()) {
+        if (currentDay.date() === date.date()) {
             break;
         }
     }
@@ -180,114 +208,239 @@ const AddTask: React.FC = () => {
     return count;
   }
   
-  function getDayOfWeek(date:Date) {
+  function getDayOfWeek(date:dayjs.Dayjs) {
     const days = ["일", "월", "화", "수", "목", "금", "토"];
-    return days[date.getDay()];
+    return days[date.day()];
   }
+
+
+// 요일 매핑
+const dayMapping: Record<number, string> = {
+  0: 'SUNDAY',
+  1: 'MONDAY',
+  2: 'TUESDAY',
+  3: 'WEDNESDAY',
+  4: 'THURSDAY',
+  5: 'FRIDAY',
+  6: 'SATURDAY',
+};
+
+// // startDate와 dueDate 사이의 요일 계산 함수
+// const getDaysBetweenDates = (startDate: string, dueDate: string): string[] => {
+//   const start = dayjs(startDate);
+//   const end = dayjs(dueDate);
+//   const days: string[] = [];
+
+//   for (let d = start; d.isBefore(end) || d.isSame(end); d = d.add(1, 'day')) {
+//     const dayOfWeek = d.day(); // 요일 (0: 일요일 ~ 6: 토요일)
+//     if (!days.includes(dayMapping[dayOfWeek])) {
+//       days.push(dayMapping[dayOfWeek]);
+//     }
+//   }
+//   console.log(days)
+//   return days;
+// };
+
+ 
+  const [startDate, setStartDate] = useState<string>();
+  const [dueDate, setDueDate] = useState<string>(); // 기본 종료일: 1주 후
+  const [weeklyDay, setWeeklyDay] = useState<string[]>();
+  
+//   const [isDefault, setIsDefault] = useState(true); // 초기값 여부 확인
+
+//   const handleStartDateChange = (date: string) => {
+//     setStartDate(dayjs(date).format('YYYY-MM-DD'));
+//     setIsDefault(false); // 값이 변경되면 초기 상태가 아님
+//   };
+
+// // 요일 계산 후 상태 업데이트
+// useEffect(() => {
+//   setWeeklyDay([dayMapping[dayjs(startDate).day()]])
+// }, [startDate]);
+
+// // 요일 체크박스 선택/해제 시 weeklyDay 업데이트
+// const handleCheckboxChange = (checkedValues: string[]) => {
+//   setWeeklyDay(checkedValues);
+// };
+
+
 
   const handleFrequencyOptions = () => {
     switch (frequencyType) {
       case 'daily':
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', border:'1px solid #000', justifyContent:'center' }}>
-             {/* "일 마다" 입력 필드 한 줄로 배치 */}
-      <Form.Item>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          
-          <Form.Item
-            name="dailyInterval"
-            initialValue={1}
-            noStyle
-            rules={[{ required: true, message: '일 수를 입력하세요.' }]}
-          >
-            <Input size="large" type="number" min={1} placeholder="1" style={{ width: '100px' }} />
-            <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>일 마다</label>
-          </Form.Item>
-        </div>
+          <>
+  {/* "일 마다" 입력 필드 한 줄로 배치 */}
+  {/* "일 마다" 입력 필드 한 줄로 배치 */}
+  <Form.Item style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <Form.Item
+        name="dailyInterval"
+        initialValue={1}
+        noStyle
+        rules={[{ required: true, message: '일 수를 입력하세요.' }]}
+      >
+        <Input
+          size="large"
+          type="number"
+          min={1}
+          placeholder="1"
+          style={{ width: '100px' }}
+        />
       </Form.Item>
+      <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>일 마다</label>
+    </div>
+  </Form.Item>
 
-      {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
-      <Form.Item>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
+      <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%', // 내부 컨텐츠도 100%로 설정
+    }}
+  >
+    <Form.Item
+    name="hasEndDate"
+    >
+    <Radio.Group
+      value={hasEndDate}
+      onChange={(e) => setHasEndDate(e.target.value)}
+      style={{
+        flex: 1, // 공간을 균등 분배
+        display: 'flex',
+        flexDirection:'row'
+      }}
+    >
+      <Radio value={false}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
+      </Radio>
+      <Radio value={true}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
+      </Radio>
+    </Radio.Group>
+    </Form.Item>
+
+    {hasEndDate && (
+      <Form.Item
+        name="endDate"
+        noStyle
+        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
+        style={{
+          flex: 1, // 공간을 균등 분배
+        }}
+      >
+        <DatePicker
+          size="large"
+          placeholder="종료일 선택"
           
-
-          <Radio.Group
-            value={hasEndDate}
-            onChange={(e) => setHasEndDate(e.target.value)}
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
-            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
-          </Radio.Group>
-
-          {hasEndDate && (
-            <Form.Item
-              name="endDate"
-              noStyle
-              rules={[{ required: true, message: '종료일을 선택하세요.' }]}
-            >
-              <DatePicker size="large" placeholder="종료일 선택" />
-            </Form.Item>
-          )}
-        </div>
+        />
       </Form.Item>
-          </div>
+    )}
+  </div>
+
+</>
+
+
         );
       case 'weekly':
         return (
           <>
-          <Form.Item>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          
-          <Form.Item
-            name="weeklyInterval"
-            initialValue={1}
-            noStyle
-            rules={[{ required: true, message: '주 수를 입력하세요.' }]}
-          >
-            <Input size="large" type="number" min={1} placeholder="1" style={{ width: '100px' }} />
-            <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>주 마다</label>
-          </Form.Item>
-        </div>
+          {/* "주 마다" 입력 필드 한 줄로 배치 */}
+  <Form.Item style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+    
+      <Form.Item
+        name="weeklyInterval"
+        initialValue={1}
+        noStyle
+        rules={[{ required: true, message: '주 수를 입력하세요.' }]}
+      >
+        <Input
+          size="large"
+          type="number"
+          min={1}
+          placeholder="1"
+          style={{ width: '100px' }}
+        />
       </Form.Item>
-          <Form.Item name="weeklyDays" style={{ width: '100%', display:'flex', justifyContent: 'center' }}>
-            <Checkbox.Group
-              options={[
-                { label: '일', value: 'SUNDAY' },
-                { label: '월', value: 'MONDAY' },
-                { label: '화', value: 'TUESDAY' },
-                { label: '수', value: 'WEDNESDAY' },
-                { label: '목', value: 'THURSDAY' },
-                { label: '금', value: 'FRIDAY' },
-                { label: '토', value: 'SATURDAY' },
-              ]}
-              value={weeklyDay}
-              onChange={(checkedValues: string[]) => setWeeklyDay(checkedValues)}
-            />
-          </Form.Item>
-          {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
-      <Form.Item>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <Radio.Group
-            value={hasEndDate}
-            onChange={(e) => setHasEndDate(e.target.value)}
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
-            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
-          </Radio.Group>
+      <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>주 마다</label>
+    </div>
+  </Form.Item>
+      
+  <Form.Item
+      name="weeklyDay"
+      style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
 
-          {hasEndDate && (
-            <Form.Item
-              name="endDate"
-              noStyle
-              rules={[{ required: true, message: '종료일을 선택하세요.' }]}
-            >
-              <DatePicker size="large" placeholder="종료일 선택" />
-            </Form.Item>
-          )}
-        </div>
+    >
+      <Checkbox.Group
+        style={{
+          width: '100%', // 부모 너비에 맞추기
+          display: 'flex', // 플렉스 박스 사용
+          justifyContent: 'space-between', // 옵션 간 간격 균등 분배
+          flexWrap: 'nowrap', // 줄 바꿈 방지
+        }}
+        options={[
+          { label: '일', value: 'SUNDAY' },
+          { label: '월', value: 'MONDAY' },
+          { label: '화', value: 'TUESDAY' },
+          { label: '수', value: 'WEDNESDAY' },
+          { label: '목', value: 'THURSDAY' },
+          { label: '금', value: 'FRIDAY' },
+          { label: '토', value: 'SATURDAY' },
+        ]}
+
+      />
+    </Form.Item>
+
+          {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
+      <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%', // 내부 컨텐츠도 100%로 설정
+    }}
+  >
+    <Form.Item
+    name="hasEndDate"
+    >
+    <Radio.Group
+      value={hasEndDate}
+      onChange={(e) => setHasEndDate(e.target.value)}
+      style={{
+        flex: 1, // 공간을 균등 분배
+        display: 'flex',
+        flexDirection:'row'
+      }}
+    >
+      <Radio value={false}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
+      </Radio>
+      <Radio value={true}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
+      </Radio>
+    </Radio.Group>
+    </Form.Item>
+
+    {hasEndDate && (
+      <Form.Item
+        name="endDate"
+        noStyle
+        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
+        style={{
+          flex: 1, // 공간을 균등 분배
+        }}
+      >
+        <DatePicker
+          size="large"
+          placeholder="종료일 선택"
+          
+        />
       </Form.Item>
+    )}
+  </div>
           </>
         );
       case 'monthly':
@@ -307,73 +460,122 @@ const AddTask: React.FC = () => {
           </Form.Item>
         </div>
       </Form.Item>
-          <Form.Item name="monthlyOption">
-            <Radio.Group>
+          <Form.Item name="monthlyOption" >
+            <Radio.Group onChange={(e) => setMonthlyOption((e.target.value))}
+            value={monthlyOption}>
               <Space direction="horizontal">
-                <Radio value="dayOfMonth">{`${new Date(startDate).getDate()}일`}</Radio>
-                <Radio value="weekOfMonth">{`${getWeekOfMonthForSpecificDay(new Date(startDate))}번째 ${getDayOfWeek(new Date(startDate))}요일`}</Radio>
+                <Radio value="dayOfMonth" style={{whiteSpace:'nowrap'}}>{`${dayjs(startDate).date()}일`}</Radio>
+                <Radio value="weekOfMonth" style={{whiteSpace:'nowrap'}}>{`${getWeekOfMonthForSpecificDay(dayjs(startDate))}번째 ${getDayOfWeek(dayjs(startDate))}요일`}</Radio>
               </Space>
             </Radio.Group>
           </Form.Item>
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
-      <Form.Item>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <Radio.Group
-            value={hasEndDate}
-            onChange={(e) => setHasEndDate(e.target.value)}
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
-            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
-          </Radio.Group>
+          <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%', // 내부 컨텐츠도 100%로 설정
+    }}
+  >
+    <Form.Item
+    name="hasEndDate"
+    >
+    <Radio.Group
+      value={hasEndDate}
+      onChange={(e) => setHasEndDate(e.target.value)}
+      style={{
+        flex: 1, // 공간을 균등 분배
+        display: 'flex',
+        flexDirection:'row'
+      }}
+    >
+      <Radio value={false}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
+      </Radio>
+      <Radio value={true}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
+      </Radio>
+    </Radio.Group>
+    </Form.Item>
 
-          {hasEndDate && (
-            <Form.Item
-              name="endDate"
-              noStyle
-              rules={[{ required: true, message: '종료일을 선택하세요.' }]}
-            >
-              <DatePicker size="large" placeholder="종료일 선택" />
-            </Form.Item>
-          )}
-        </div>
+    {hasEndDate && (
+      <Form.Item
+        name="endDate"
+        noStyle
+        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
+        style={{
+          flex: 1, // 공간을 균등 분배
+        }}
+      >
+        <DatePicker
+          size="large"
+          placeholder="종료일 선택"
+          
+        />
       </Form.Item>
+    )}
+  </div>
           </>
         );
       case 'yearly':
         return (
         <>
-          <Form.Item name="yearlyOption">
-            <Radio.Group>
+          <Form.Item name="yearlyOption" >
+            <Radio.Group value={yearlyOption} onChange={(e)=>setYearlyOption(e.target.value)}>
               <Space direction="horizontal">
-                <Radio value="yearlyDayOfMonth">{`${new Date(startDate).getMonth()+1}월 ${new Date(startDate).getDate()}일`}</Radio>
-                <Radio value="yearlyWeekOfMonth">{`${new Date(startDate).getMonth()+1}월 ${getWeekOfMonthForSpecificDay(new Date(startDate))}번째 ${getDayOfWeek(new Date(startDate))}요일`}</Radio>
+                <Radio value="yearlyDayOfMonth" style={{whiteSpace:'nowrap'}}>{`${dayjs(startDate).month()+1}월 ${dayjs(startDate).date()}일`}</Radio>
+                <Radio value="yearlyWeekOfMonth" style={{whiteSpace:'nowrap'}}>{`${dayjs(startDate).month()+1}월 ${getWeekOfMonthForSpecificDay(dayjs(startDate))}번째 ${getDayOfWeek(dayjs(startDate))}요일`}</Radio>
               </Space>
             </Radio.Group>
           </Form.Item>
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
-      <Form.Item>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-      <Radio.Group
-            value={hasEndDate}
-            onChange={(e) => setHasEndDate(e.target.value)}
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <Radio value={false}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 없음</span></Radio>
-            <Radio value={true}><span style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>종료일 있음</span></Radio>
-          </Radio.Group>
-
-        {hasEndDate && (
-          <Form.Item
-            name="endDate"
-            noStyle
-            rules={[{ required: true, message: '종료일을 선택하세요.' }]}
-          >
-            <DatePicker size="large" placeholder="종료일 선택" />
-          </Form.Item>
-        )}
-      </div>
+          <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%', // 내부 컨텐츠도 100%로 설정
+    }}
+  >
+    <Form.Item
+    name="hasEndDate"
+    >
+    <Radio.Group
+      value={hasEndDate}
+      onChange={(e) => setHasEndDate(e.target.value)}
+      style={{
+        flex: 1, // 공간을 균등 분배
+        display: 'flex',
+        flexDirection:'row'
+      }}
+    >
+      <Radio value={false}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
+      </Radio>
+      <Radio value={true}>
+        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
+      </Radio>
+    </Radio.Group>
     </Form.Item>
+
+    {hasEndDate && (
+      <Form.Item
+        name="endDate"
+        noStyle
+        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
+        style={{
+          flex: 1, // 공간을 균등 분배
+        }}
+      >
+        <DatePicker
+          size="large"
+          placeholder="종료일 선택"
+          
+        />
+      </Form.Item>
+    )}
+  </div>
     </>
         );
       default:
@@ -383,20 +585,36 @@ const AddTask: React.FC = () => {
 
   const handleSubmit = async (values: any) => {
     try {
-      const taskData = {
+      let taskData: Record<string, any> = {
         ...values,
-        startDate: values.dateRange[0].format('YYYY-MM-DD'),
-        dueDate: values.dateRange[1].format('YYYY-MM-DD'),
-        recurring: isRecurring,
-        frequencyType,
-        hasEndDate,
+        startDate: values.startDate.format('YYYY-MM-DD'),
+        dueDate: values.dueDate.format('YYYY-MM-DD'),
+        endDate: values.endDate.format('YYYY-MM-DD'),
       };
-
+  
+      if (values.frequencyType === 'yearly') {
+        const yearlyOption = values.yearlyOption; // yearlyOption 값 가져오기
+  
+        if (yearlyOption === 'yearlyDayOfMonth') {
+          taskData = {
+            ...taskData,
+            yearlyMonth: dayjs(values.startDate).month() + 1,
+            yearlyDayOfMonth: dayjs(values.startDate).date(),
+          };
+        } else if (yearlyOption === 'yearlyWeekOfMonth') {
+          taskData = {
+            ...taskData,
+            yearlyMonth: dayjs(values.startDate).month() + 1,
+            yearlyWeekOfMonth: getWeekOfMonthForSpecificDay(dayjs(values.startDate)),
+            yearlyDayOfWeek: getDayOfWeek(dayjs(values.startDate)),
+          };
+        }
+      }
       console.log('Task Data:', taskData);
-      const response = await addTask(taskData);
-      console.log('Task added successfully:', response);
+      // const response = await addTask(taskData);
+      // console.log('Task added successfully:', response);
     } catch (error) {
-      console.error('Error adding task:', error);
+      //console.error('Error adding task:', error);
     }
   };
 
@@ -414,8 +632,14 @@ const AddTask: React.FC = () => {
         layout="horizontal"
         onFinish={handleSubmit}
         initialValues={{
-          dateRange: [dayjs(), dayjs()],
+          startDate: dayjs(),
+          dueDate: dayjs(),
           frequencyType: 'daily',
+          weeklyDay: [dayMapping[dayjs().day()]],
+          isRecurring:false,
+          hasEndDate:false,
+          monthlyOption:'dayOfMonth',
+          yearlyOption:'yearlyDayOfMonth'
         }}
         labelCol={{ span: 4 }}
         wrapperCol={{ span: 20 }}
@@ -442,25 +666,50 @@ const AddTask: React.FC = () => {
     {/* 시작일 */}
     <Form.Item
       name="startDate"
-      style={{ marginBottom: 0 }}
       rules={[{ required: true, message: '시작일을 선택하세요.' }]}
+      style={{ marginBottom: 0 }}
     >
-      <DatePicker size="large" placeholder="시작일 선택" />
+      <DatePicker size="large" placeholder="시작일 선택" 
+          />
     </Form.Item>
     <span>~</span>
     {/* 종료일 */}
     <Form.Item
-      name="endDate"
-      style={{ marginBottom: 0 }}
+      name="dueDate"
       rules={[{ required: true, message: '마감일을 선택하세요.' }]}
+      
+      style={{
+        marginBottom: 0
+      }}
     >
-      <DatePicker size="large" placeholder="마감일 선택" />
+      <DatePicker size="large" placeholder="마감일 선택"
+      onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+        if (Array.isArray(dateString)) {
+          console.error('Unexpected array value in dateString:', dateString);
+          return;
+        }
+        if (date) {
+          setDueDate(dateString); // 상태 업데이트
+          console.log('Updated dueDate:', dateString); // 확인용 로그
+        }
+      }}
+      />
     </Form.Item>
 
     {/* 반복 여부 */}
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <span>반복 여부:</span>
-      <Switch checked={isRecurring} onChange={setIsRecurring} />
+      <Form.Item
+      name="isRecurring"
+      style={{ marginBottom: 0 }}
+      valuePropName="checked"
+    >
+      <Switch
+        onChange={(checked) => {
+          setIsRecurring(checked); // 상태 업데이트
+        }}
+      />
+    </Form.Item>
     </div>
   </div>
 </Form.Item>
@@ -477,13 +726,14 @@ const AddTask: React.FC = () => {
         alignItems: 'center', 
         gap: '16px', 
         border: '1px solid #000', 
-        justifyContent: 'center' 
+        justifyContent: 'center'
+        
     }}>
       <Form.Item
         label=""
         name="frequencyType"
         rules={[{ required: true, message: '반복 유형을 선택하세요.' }]}
-        style={{ width: '100%', display:'flex', justifyContent: 'center' }}
+        style={{ width: '100%', display:'flex', justifyContent: 'center',marginBottom:'0'}}
       >
           
           <Radio.Group
@@ -539,7 +789,6 @@ const AddTask: React.FC = () => {
           <Select
           size="large"
             placeholder="프로젝트를 선택하세요"
-            onChange={handleProjectChange}
           >
             {projectList.map((project: any) => (
               <Option key={project.projectId} value={project.projectId}>
@@ -560,7 +809,7 @@ const AddTask: React.FC = () => {
       mode="multiple"
       style={{ width: '100%' }}
       placeholder="Select users"
-      onChange={handleChange}
+
     >
       {userList.map((user) => (
         <Option key={user.userId} value={user.userId}>

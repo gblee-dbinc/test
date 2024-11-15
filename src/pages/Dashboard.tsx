@@ -16,6 +16,10 @@ const Dashboard = () => {
     navigation('/tasks/add');
   }
 
+  //전체업무에서 사용자가 속한 프로젝트들의 업무 중 마감일 임박한 5개 업무 가져오기
+
+  //기본 일자는 오늘, calendar에서 날짜 선택하면 마감일 기준 해당 날짜의 업무 리스트 조회
+
   return (
     <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection:'row'  }}>
     {/* 왼쪽 고정 영역 */}
@@ -34,7 +38,6 @@ const Dashboard = () => {
           gap: '20px',
         }}
       >
-        {/* 오른쪽 영역 내용 */}
         
       {/* 상단 버튼 */}
       <div style={{ textAlign: 'right'}}>
