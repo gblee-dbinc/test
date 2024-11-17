@@ -10,7 +10,8 @@ import {
   Select,
   Space,
   Avatar,
-  FormInstance
+  FormInstance,
+  Card
 } from 'antd';
 import { addTask } from '../api/task/addTask';
 import { getUserByProjectId } from '../api/user/getUserByProjectId';
@@ -19,55 +20,54 @@ import dayjs from 'dayjs';
 import styles from '../styles/pages/AddTask.module.css';
 import '../styles/pages/AddTask.css';
 import { useNavigate } from "react-router-dom";
-import addTaskIcon from '../styles/images/AddtaskIcon.png'
+import AddTaskIcon from '@mui/icons-material/AddTask';
+import Title from "antd/es/typography/Title";
+import { toast } from "react-toastify";
 
 
 const { Option } = Select;
 
 // 예제 유저 데이터
-const userListData = [
-  {
-    userId: '1',
-    userName: 'John Doe',
-    profileImage: 'https://via.placeholder.com/40', // 예제 프로필 이미지 URL
-  },
-  {
-    userId: '2',
-    userName: 'Jane Smith',
-    profileImage: 'https://via.placeholder.com/40',
-  },
-  {
-    userId: '3',
-    userName: 'Alice Brown',
-    profileImage: 'https://via.placeholder.com/40',
-  },
-];
+// const userListData = [
+//   {
+//     userId: '1',
+//     userName: 'John Doe',
+//     profileImage: 'https://via.placeholder.com/40', // 예제 프로필 이미지 URL
+//   },
+//   {
+//     userId: '2',
+//     userName: 'Jane Smith',
+//     profileImage: 'https://via.placeholder.com/40',
+//   },
+//   {
+//     userId: '3',
+//     userName: 'Alice Brown',
+//     profileImage: 'https://via.placeholder.com/40',
+//   },
+// ];
 
-const projectListData = [
-  {
-    projectId: '10',
-    name: '생명인프라팀',
-    description: 'DB Inc. 생명인프라팀', // 예제 프로필 이미지 URL
-  },
-  {
-    projectId: '20',
-    name: '손보인프라팀',
-    description: 'DB Inc. 손보인프라팀',
-  },
-  {
-    projectId: '30',
-    name: 'IDC 사업팀',
-    description: 'DB Inc. IDC 사업팀',
-  },
-  {
-    projectId: '40',
-    name: '정보보안팀',
-    description: 'DB Inc. 정보보안팀',
-  },
-];
-
-
-
+// const projectListData = [
+//   {
+//     projectId: '10',
+//     name: '생명인프라팀',
+//     description: 'DB Inc. 생명인프라팀', // 예제 프로필 이미지 URL
+//   },
+//   {
+//     projectId: '20',
+//     name: '손보인프라팀',
+//     description: 'DB Inc. 손보인프라팀',
+//   },
+//   {
+//     projectId: '30',
+//     name: 'IDC 사업팀',
+//     description: 'DB Inc. IDC 사업팀',
+//   },
+//   {
+//     projectId: '40',
+//     name: '정보보안팀',
+//     description: 'DB Inc. 정보보안팀',
+//   },
+// ];
 
 
 interface Project {
@@ -83,23 +83,13 @@ const AddTask: React.FC = () => {
   const [form] = Form.useForm(); //
 
 
-//   const [taskName, setTaskName] = useState<string>('');
-//   //const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
-
-
-  
-
-  const [processId, setProcessId] = useState<string>('');
+  const [itoProcessId, setItoProcessId] = useState<string>('');
   const [projectId, setProjectId] = useState<string>('');
-//   const [assigneeId, setAssigneeId] = useState<string>('');
-//   const [description, setDescription] = useState<string>('');
-    
-    
-//   // userList의 타입을 User[]로 설정
-   const [userList, setUserList] = useState<User[]>(userListData);
-  const [projectList, setProjectList] = useState<Project[]>(projectListData); // 여러 프로젝트 지원을 위한 배열
-  
 
+   const [userList, setUserList] = useState<User[]>([]);
+  const [projectList, setProjectList] = useState<Project[]>([]); // 여러 프로젝트 지원을 위한 배열
+  
+  
 
   const [isRecurring, setIsRecurring] = useState<boolean>(false);
     const [frequencyType, setFrequencyType] = useState<string>('daily');
@@ -109,10 +99,10 @@ const AddTask: React.FC = () => {
 //   const [weeklyFrequencyInterval, setWeeklyFrequencyInterval] = useState<string>('1');
 //   const [monthlyFrequencyInterval, setMonthlyFrequencyInterval] = useState<string>('1');
  
-const [monthlyOption, setMonthlyOption] = useState<string>('monthlyDayOfMonth');
-//   const [monthlyDayOfMonth, setMonthlyDayOfMonth] = useState<number | null>(null); 옵션1)몇일
-//   const [monthlyWeekOfMonth, setMonthlyWeekOfMonth] = useState<number | null>(null); 옵션2-1)몇번째
-//   const [monthlyDayOfWeek, setMonthlyDayOfWeek] = useState<string>(''); 옵션2-2)몇요일
+const [monthlyOption, setMonthlyOption] = useState<string>('dayOfMonth');
+  const [monthlyDayOfMonth, setMonthlyDayOfMonth] = useState<number | null>(null); //옵션1)몇일
+  const [monthlyWeekOfMonth, setMonthlyWeekOfMonth] = useState<number | null>(null); //옵션2-1)몇번째
+  const [monthlyDayOfWeek, setMonthlyDayOfWeek] = useState<string>(''); //옵션2-2)몇요일
 
   const [yearlyOption, setYearlyOption]  = useState<string>('yearlyDayOfMonth')
   const [yearlyMonth, setYearlyMonth] = useState<number | null>(null); //공통)몇월
@@ -124,69 +114,12 @@ const [monthlyOption, setMonthlyOption] = useState<string>('monthlyDayOfMonth');
 
     interface User {
       userId: string;
-      userName: string;
-      profileImage: string;
+      name: string;
+      photo: string;
       // 필요에 따라 추가 속성 정의 가능
     }
     
     
-
-    
-
-
-//   //   const dayMapping: Record<string, string> = {
-//   //     '일': 'SUNDAY',
-//   //     '월': 'MONDAY',
-//   //     '화': 'TUESDAY',
-//   //     '수': 'WEDNESDAY',
-//   //     '목': 'THURSDAY',
-//   //     '금': 'FRIDAY',
-//   //     '토': 'SATURDAY',
-//   // };
-  
-//   const numberToDay: Record<number, string> = {
-//       0: '일',
-//       1: '월',
-//       2: '화',
-//       3: '수',
-//       4: '목',
-//       5: '금',
-//       6: '토',
-//   };
-  
-
-//   const fetchProjects = async () => {
-//     try {
-//       const userInfo = sessionStorage.getItem('userInfo')
-//         ? JSON.parse(sessionStorage.getItem('userInfo') as string)
-//         : null;
-//       const resProjectList = await getProjectsByProjectId(userInfo.projectId);
-//       setProjectList(resProjectList);
-//     } catch (error) {
-//       console.error('Error fetching projects:', error);
-//     }
-//   };
-
-//   const fetchUsers = async (projectId: string) => {
-//     try {
-//       const resUserList = await getUserByProjectId(projectId);
-//       setUserList(resUserList || []);
-//     } catch (error) {
-//       console.error('Error fetching users:', error);
-//     }
-//   };
-
-//   const handleChange = (value: string[]) => {
-//     console.log('Selected users:', value);
-//   };
-
-//   useEffect(() => {
-//     fetchProjects();
-//   }, []);
-
-//   const handleProjectChange = (value: string) => {
-//     fetchUsers(value);
-//   };
 
   function getWeekOfMonthForSpecificDay(date:dayjs.Dayjs) {
     const dayOfWeek = date.day(); // 요일 (0: 일요일, 1: 월요일, ..., 6: 토요일)
@@ -246,22 +179,65 @@ const dayMapping: Record<number, string> = {
   const [dueDate, setDueDate] = useState<string>(); // 기본 종료일: 1주 후
   const [weeklyDay, setWeeklyDay] = useState<string[]>();
   
-//   const [isDefault, setIsDefault] = useState(true); // 초기값 여부 확인
+  const dayMappingKoToEn: Record<string, string> = {
+    '일': 'SUNDAY',
+    '월': 'MONDAY',
+    '화': 'TUESDAY',
+    '수': 'WEDNESDAY',
+    '목': 'THURSDAY',
+    '금': 'FRIDAY',
+    '토': 'SATURDAY',
+};
 
-//   const handleStartDateChange = (date: string) => {
-//     setStartDate(dayjs(date).format('YYYY-MM-DD'));
-//     setIsDefault(false); // 값이 변경되면 초기 상태가 아님
-//   };
+const numberToDay: Record<number, string> = {
+    0: '일',
+    1: '월',
+    2: '화',
+    3: '수',
+    4: '목',
+    5: '금',
+    6: '토',
+};
 
-// // 요일 계산 후 상태 업데이트
-// useEffect(() => {
-//   setWeeklyDay([dayMapping[dayjs(startDate).day()]])
-// }, [startDate]);
+  useEffect(() => {
+    // 오늘의 요일을 계산하고 초기 상태로 설정
+    const today = new Date().getDay(); // 0(일요일) ~ 6(토요일)
+    const todayKoreanDay = numberToDay[today]; // 숫자를 한국어 요일로 변환
+    const todayEnglishDay = dayMappingKoToEn[todayKoreanDay]; // 한국어 요일을 영어로 변환
+    setWeeklyDay([todayEnglishDay]); // 오늘의 요일을 초기 상태로 설정
 
-// // 요일 체크박스 선택/해제 시 weeklyDay 업데이트
-// const handleCheckboxChange = (checkedValues: string[]) => {
-//   setWeeklyDay(checkedValues);
-// };
+
+   const userInfo = sessionStorage.getItem("userInfo")
+         ? JSON.parse(sessionStorage.getItem("userInfo") as string)
+         : null;
+
+     if (userInfo && userInfo.projectId) {
+         //setProjectList(userInfo.projectId);
+         
+         
+         const fetchProjectList = async () => {
+           try {
+               const resProjectList = await getProjectsByProjectId(userInfo.projectId);
+               setProjectList(resProjectList);
+           } catch (error) {
+               console.error("Error fetching users:", error);
+           }
+       };
+       fetchProjectList();
+     }
+
+   if (projectId) {
+       const fetchUsers = async () => {
+           try {
+               const userListData = await getUserByProjectId(projectId);
+               setUserList(userListData || []);
+           } catch (error) {
+               console.error("Error fetching users:", error);
+           }
+       };
+       fetchUsers();
+   }
+}, [projectId]);
 
 
 
@@ -293,52 +269,63 @@ const dayMapping: Record<number, string> = {
   </Form.Item>
 
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
-      <div
+          <div
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  }}
+>
+  {/* 종료일 라디오 그룹 */}
+  <Form.Item
+    name="hasEndDate"
     style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '100%', // 내부 컨텐츠도 100%로 설정
+      flex: 1,
+      marginBottom: 0,
     }}
   >
-    <Form.Item
-    name="hasEndDate"
-    >
     <Radio.Group
       value={hasEndDate}
       onChange={(e) => setHasEndDate(e.target.value)}
       style={{
-        flex: 1, // 공간을 균등 분배
         display: 'flex',
-        flexDirection:'row'
+        justifyContent: 'space-between',
       }}
     >
-      <Radio value={false}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
+      <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
+        종료일 없음
       </Radio>
-      <Radio value={true}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
+      <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
+        종료일 있음
       </Radio>
     </Radio.Group>
-    </Form.Item>
+  </Form.Item>
 
-    {hasEndDate && (
-      <Form.Item
-        name="endDate"
-        noStyle
-        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
-        style={{
-          flex: 1, // 공간을 균등 분배
-        }}
-      >
-        <DatePicker
-          size="large"
-          placeholder="종료일 선택"
-          
-        />
-      </Form.Item>
-    )}
-  </div>
+  {/* 종료일 DatePicker */}
+  <Form.Item
+    name="endDate"
+    initialValue={false} // 초기값 설정
+    noStyle
+    rules={[{ required: true, message: '종료일을 선택하세요.' }]}
+    style={{
+      flex: 1,
+      marginBottom: 0,
+    }}
+  >
+    <DatePicker
+      size="large"
+      placeholder="종료일 선택"
+      style={{
+        width: '100%',
+        opacity: hasEndDate ? 1 : 0, // 보이거나 투명하게
+        visibility: hasEndDate ? 'visible' : 'hidden', // 보이거나 숨김
+        transition: 'opacity 0.3s ease', // 부드러운 전환
+      }}
+    />
+  </Form.Item>
+</div>
+
 
 </>
 
@@ -395,188 +382,332 @@ const dayMapping: Record<number, string> = {
     </Form.Item>
 
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
-      <div
+          <div
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  }}
+>
+  {/* 종료일 라디오 그룹 */}
+  <Form.Item
+  name="hasEndDate"
+  initialValue={false} // 초기값 설정
+  style={{
+    flex: 1,
+    marginBottom: 0,
+  }}
+>
+  <Radio.Group
+    value={hasEndDate}
+    onChange={(e) => {
+      setHasEndDate(e.target.value); // 상태 업데이트
+      if (!e.target.value) {
+        form.setFieldsValue({ endDate: null }); // hasEndDate가 false일 때 endDate 값 초기화
+      }
+    }}
     style={{
       display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '100%', // 내부 컨텐츠도 100%로 설정
+      justifyContent: 'space-between',
     }}
   >
-    <Form.Item
-    name="hasEndDate"
-    >
-    <Radio.Group
-      value={hasEndDate}
-      onChange={(e) => setHasEndDate(e.target.value)}
-      style={{
-        flex: 1, // 공간을 균등 분배
-        display: 'flex',
-        flexDirection:'row'
-      }}
-    >
-      <Radio value={false}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
-      </Radio>
-      <Radio value={true}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
-      </Radio>
-    </Radio.Group>
-    </Form.Item>
+    <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
+      종료일 없음
+    </Radio>
+    <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
+      종료일 있음
+    </Radio>
+  </Radio.Group>
+</Form.Item>
 
-    {hasEndDate && (
-      <Form.Item
-        name="endDate"
-        noStyle
-        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
-        style={{
-          flex: 1, // 공간을 균등 분배
-        }}
-      >
-        <DatePicker
-          size="large"
-          placeholder="종료일 선택"
-          
-        />
-      </Form.Item>
-    )}
-  </div>
+{/* 종료일 DatePicker */}
+<Form.Item
+  name="endDate"
+  dependencies={['hasEndDate']} // hasEndDate 상태에 따라 유효성 검사 조건 변경
+  rules={[
+    ({ getFieldValue }) => ({
+      validator(_, value) {
+        if (getFieldValue('hasEndDate') && !value) {
+          return Promise.reject(new Error('종료일을 선택하세요.'));
+        }
+        return Promise.resolve();
+      },
+    }),
+  ]}
+  style={{
+    flex: 1,
+    marginBottom: 0,
+    visibility: hasEndDate ? 'visible' : 'hidden', // 공간 고정
+    opacity: hasEndDate ? 1 : 0,
+    transition: 'opacity 0.3s ease',
+  }}
+>
+  <DatePicker
+    size="large"
+    placeholder="종료일 선택"
+    style={{
+      width: '100%',
+    }}
+  />
+</Form.Item>
+
+</div>
+
           </>
         );
       case 'monthly':
         return (
           <>
-          <Form.Item>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          
-          <Form.Item
-            name="monthlyInterval"
-            initialValue={1}
-            noStyle
-            rules={[{ required: true, message: '개월 수를 입력하세요.' }]}
-          >
-            <Input size="large" type="number" min={1} placeholder="1" style={{ width: '100px' }} />
-            <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>개월 마다</label>
-          </Form.Item>
-        </div>
+          <Form.Item style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+    
+      <Form.Item
+        name="monthlyInterval"
+        initialValue={1}
+        noStyle
+        rules={[{ required: true, message: '개월 수를 입력하세요.' }]}
+      >
+        <Input
+          size="large"
+          type="number"
+          min={1}
+          placeholder="1"
+          style={{ width: '100px' }}
+        />
       </Form.Item>
-          <Form.Item name="monthlyOption" >
+      <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>개월 마다</label>
+    </div>
+  </Form.Item>
+          <Form.Item style={{
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      marginBottom: '16px', // 적절한 간격 추가
+    }} >
             <Radio.Group onChange={(e) => setMonthlyOption((e.target.value))}
-            value={monthlyOption}>
+            value={monthlyOption} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              width: '100%',
+              gap: '16px', // 버튼 간 간격 추가
+            }}>
               <Space direction="horizontal">
-                <Radio value="dayOfMonth" style={{whiteSpace:'nowrap'}}>{`${dayjs(startDate).date()}일`}</Radio>
-                <Radio value="weekOfMonth" style={{whiteSpace:'nowrap'}}>{`${getWeekOfMonthForSpecificDay(dayjs(startDate))}번째 ${getDayOfWeek(dayjs(startDate))}요일`}</Radio>
+                <Radio value="dayOfMonth" style={{
+          flex: 1,
+          whiteSpace: 'nowrap',
+          display: 'flex',
+          textAlign: 'center',
+        }}>{`${dayjs(startDate).date()}일`}</Radio>
+                <Radio value="weekOfMonth" style={{
+          flex: 1,
+          whiteSpace: 'nowrap',
+          display: 'flex',
+          textAlign: 'center',
+        }}>{`${getWeekOfMonthForSpecificDay(dayjs(startDate))}번째 ${getDayOfWeek(dayjs(startDate))}요일`}</Radio>
               </Space>
             </Radio.Group>
           </Form.Item>
           {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
           <div
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  }}
+>
+  {/* 종료일 라디오 그룹 */}
+  <Form.Item
+    name="hasEndDate"
+    initialValue={false} // 초기값 설정
     style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '100%', // 내부 컨텐츠도 100%로 설정
+      flex: 1,
+      marginBottom: 0,
     }}
   >
-    <Form.Item
-    name="hasEndDate"
-    >
     <Radio.Group
-      value={hasEndDate}
-      onChange={(e) => setHasEndDate(e.target.value)}
-      style={{
-        flex: 1, // 공간을 균등 분배
-        display: 'flex',
-        flexDirection:'row'
-      }}
-    >
-      <Radio value={false}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
-      </Radio>
-      <Radio value={true}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
-      </Radio>
-    </Radio.Group>
-    </Form.Item>
+    value={hasEndDate}
+    onChange={(e) => {
+      setHasEndDate(e.target.value); // 상태 업데이트
+      if (!e.target.value) {
+        form.setFieldsValue({ endDate: null }); // hasEndDate가 false일 때 endDate 값 초기화
+      }
+    }}
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+    }}
+  >
+    <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
+      종료일 없음
+    </Radio>
+    <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
+      종료일 있음
+    </Radio>
+  </Radio.Group>
+</Form.Item>
 
-    {hasEndDate && (
-      <Form.Item
-        name="endDate"
-        noStyle
-        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
-        style={{
-          flex: 1, // 공간을 균등 분배
-        }}
-      >
-        <DatePicker
-          size="large"
-          placeholder="종료일 선택"
-          
-        />
-      </Form.Item>
-    )}
-  </div>
+{/* 종료일 DatePicker */}
+<Form.Item
+  name="endDate"
+  dependencies={['hasEndDate']} // hasEndDate 상태에 따라 유효성 검사 조건 변경
+  rules={[
+    ({ getFieldValue }) => ({
+      validator(_, value) {
+        if (getFieldValue('hasEndDate') && !value) {
+          return Promise.reject(new Error('종료일을 선택하세요.'));
+        }
+        return Promise.resolve();
+      },
+    }),
+  ]}
+  style={{
+    flex: 1,
+    marginBottom: 0,
+    visibility: hasEndDate ? 'visible' : 'hidden', // 공간 고정
+    opacity: hasEndDate ? 1 : 0,
+    transition: 'opacity 0.3s ease',
+  }}
+>
+  <DatePicker
+    size="large"
+    placeholder="종료일 선택"
+    style={{
+      width: '100%',
+    }}
+  />
+  </Form.Item>
+</div>
+
           </>
         );
       case 'yearly':
         return (
-        <>
-          <Form.Item name="yearlyOption" >
-            <Radio.Group value={yearlyOption} onChange={(e)=>setYearlyOption(e.target.value)}>
-              <Space direction="horizontal">
-                <Radio value="yearlyDayOfMonth" style={{whiteSpace:'nowrap'}}>{`${dayjs(startDate).month()+1}월 ${dayjs(startDate).date()}일`}</Radio>
-                <Radio value="yearlyWeekOfMonth" style={{whiteSpace:'nowrap'}}>{`${dayjs(startDate).month()+1}월 ${getWeekOfMonthForSpecificDay(dayjs(startDate))}번째 ${getDayOfWeek(dayjs(startDate))}요일`}</Radio>
-              </Space>
-            </Radio.Group>
-          </Form.Item>
-          {/* 종료일 옵션과 DatePicker 한 줄로 배치 */}
-          <div
+          <>
+          {/* yearlyOption 선택 */}
+          
+  <Form.Item
+    //name="yearlyOption"
     style={{
+      width: '100%',
       display: 'flex',
-      alignItems: 'center',
       justifyContent: 'center',
-      width: '100%', // 내부 컨텐츠도 100%로 설정
+      marginBottom: '16px', // 적절한 간격 추가
     }}
   >
-    <Form.Item
-    name="hasEndDate"
-    >
     <Radio.Group
-      value={hasEndDate}
-      onChange={(e) => setHasEndDate(e.target.value)}
+      value={yearlyOption}
+      onChange={(e) => setYearlyOption(e.target.value)}
       style={{
-        flex: 1, // 공간을 균등 분배
         display: 'flex',
-        flexDirection:'row'
+        justifyContent: 'space-between',
+        width: '100%',
+        gap: '16px', // 버튼 간 간격 추가
       }}
     >
-      <Radio value={false}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 없음</span>
-      </Radio>
-      <Radio value={true}>
-        <span style={{whiteSpace:'nowrap'}}>종료일 있음</span>
-      </Radio>
-    </Radio.Group>
-    </Form.Item>
-
-    {hasEndDate && (
-      <Form.Item
-        name="endDate"
-        noStyle
-        rules={[{ required: true, message: '종료일을 선택하세요.' }]}
+      <Radio
+        value="yearlyDayOfMonth"
         style={{
-          flex: 1, // 공간을 균등 분배
+          flex: 1,
+          whiteSpace: 'nowrap',
+          display: 'flex',
+          textAlign: 'center',
         }}
       >
-        <DatePicker
-          size="large"
-          placeholder="종료일 선택"
-          
-        />
-      </Form.Item>
-    )}
-  </div>
-    </>
+        {`${dayjs(startDate).month() + 1}월 ${dayjs(startDate).date()}일`}
+      </Radio>
+      <Radio
+        value="yearlyWeekOfMonth"
+        style={{
+          flex: 1,
+          whiteSpace: 'nowrap',
+          display: 'flex',
+          textAlign: 'center',
+        }}
+      >
+        {`${dayjs(startDate).month() + 1}월 ${getWeekOfMonthForSpecificDay(
+          dayjs(startDate)
+        )}번째 ${getDayOfWeek(dayjs(startDate))}요일`}
+      </Radio>
+    </Radio.Group>
+  </Form.Item>
+
+        
+          {/* 종료일 옵션 */}
+          <div
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  }}
+>
+  {/* 종료일 라디오 그룹 */}
+  <Form.Item
+    name="hasEndDate"
+    initialValue={false} // 초기값 설정
+    style={{
+      flex: 1,
+      marginBottom: 0,
+    }}
+  >
+    <Radio.Group
+    value={hasEndDate}
+    onChange={(e) => {
+      setHasEndDate(e.target.value); // 상태 업데이트
+      if (!e.target.value) {
+        form.setFieldsValue({ endDate: null }); // hasEndDate가 false일 때 endDate 값 초기화
+      }
+    }}
+    style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+    }}
+  >
+    <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
+      종료일 없음
+    </Radio>
+    <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
+      종료일 있음
+    </Radio>
+  </Radio.Group>
+</Form.Item>
+
+{/* 종료일 DatePicker */}
+<Form.Item
+  name="endDate"
+  dependencies={['hasEndDate']} // hasEndDate 상태에 따라 유효성 검사 조건 변경
+  rules={[
+    ({ getFieldValue }) => ({
+      validator(_, value) {
+        if (getFieldValue('hasEndDate') && !value) {
+          return Promise.reject(new Error('종료일을 선택하세요.'));
+        }
+        return Promise.resolve();
+      },
+    }),
+  ]}
+  style={{
+    flex: 1,
+    marginBottom: 0,
+    visibility: hasEndDate ? 'visible' : 'hidden', // 공간 고정
+    opacity: hasEndDate ? 1 : 0,
+    transition: 'opacity 0.3s ease',
+  }}
+>
+  <DatePicker
+    size="large"
+    placeholder="종료일 선택"
+    style={{
+      width: '100%',
+    }}
+  />
+  </Form.Item>
+</div>
+
+        </>
+        
         );
       default:
         return null;
@@ -584,48 +715,92 @@ const dayMapping: Record<number, string> = {
   };
 
   const handleSubmit = async (values: any) => {
+    const userInfo = sessionStorage.getItem("userInfo")
+      ? JSON.parse(sessionStorage.getItem("userInfo") as string)
+      : null;
     try {
+      // 기본 필수 필드 추가
       let taskData: Record<string, any> = {
         ...values,
         startDate: values.startDate.format('YYYY-MM-DD'),
         dueDate: values.dueDate.format('YYYY-MM-DD'),
-        endDate: values.endDate.format('YYYY-MM-DD'),
+        hasEndDate: values.hasEndDate || false, // 기본적으로 포함
+        createdBy: userInfo.userId,
+        createdDate: dayjs().format('YYYY-MM-DD'),
+        status: 0
       };
   
-      if (values.frequencyType === 'yearly') {
-        const yearlyOption = values.yearlyOption; // yearlyOption 값 가져오기
+      // 반복 여부 처리
+      if (values.isRecurring) {
+        taskData = {
+          ...taskData,
+          isRecurring: true,
+          frequencyType: values.frequencyType || 'daily', // 기본값: daily
+          frequencyInterval: values.dailyInterval || 1, // 기본값: dailyInterval
+        };
   
-        if (yearlyOption === 'yearlyDayOfMonth') {
-          taskData = {
-            ...taskData,
-            yearlyMonth: dayjs(values.startDate).month() + 1,
-            yearlyDayOfMonth: dayjs(values.startDate).date(),
-          };
-        } else if (yearlyOption === 'yearlyWeekOfMonth') {
-          taskData = {
-            ...taskData,
-            yearlyMonth: dayjs(values.startDate).month() + 1,
-            yearlyWeekOfMonth: getWeekOfMonthForSpecificDay(dayjs(values.startDate)),
-            yearlyDayOfWeek: getDayOfWeek(dayjs(values.startDate)),
-          };
+        if (values.frequencyType === 'weekly') {
+          taskData.frequencyInterval = values.weeklyInterval || 1; // 주기
+          taskData.weeklyDay = values.weeklyDay || []; // 선택된 요일
+        } else if (values.frequencyType === 'monthly') {
+          taskData.frequencyInterval = values.monthlyInterval || 1;
+          
+          if (monthlyOption === 'dayOfMonth') {
+            taskData.monthlyDayOfMonth = dayjs(startDate).date();
+            //taskData.yearlyDayOfMonth = dayjs(values.startDate).date();
+          } else if (monthlyOption === 'weekOfMonth') {
+            taskData.monthlyWeekOfMonth = getWeekOfMonthForSpecificDay(dayjs(startDate))
+            taskData.monthlyDayOfWeek = getDayOfWeek(dayjs(startDate))
+          }
+        
+        } else if (values.frequencyType === 'yearly') {
+          if (yearlyOption === 'yearlyDayOfMonth') {
+            taskData.yearlyMonth = dayjs(values.startDate).month() + 1;
+            taskData.yearlyDayOfMonth = dayjs(values.startDate).date();
+          } else if (yearlyOption === 'yearlyWeekOfMonth') {
+            taskData.yearlyMonth = dayjs(values.startDate).month() + 1;
+            taskData.yearlyWeekOfMonth = getWeekOfMonthForSpecificDay(dayjs(values.startDate));
+            taskData.yearlyDayOfWeek = getDayOfWeek(dayjs(values.startDate));
+          }
         }
+      } else {
+        taskData.isRecurring = false;
       }
+  
+      // 종료일 처리
+      if (values.hasEndDate) {
+        taskData.endDate = values.endDate.format('YYYY-MM-DD');
+      }
+
+  
       console.log('Task Data:', taskData);
-      // const response = await addTask(taskData);
-      // console.log('Task added successfully:', response);
+  
+      // 업무 등록 API 호출
+      const response = await addTask(taskData);
+            
+      console.log(response)
+
+      if (response.code===201) {
+          toast.success(`업무를 등록하였습니다!`);
+          navigate('/');
+
+      } else {
+          // 실패 시 에러 메시지 표시
+          //toast.error(.message || '업무 등록에 실패했습니다.');
+      }
     } catch (error) {
-      //console.error('Error adding task:', error);
+      toast.error('서버와 통신 중 오류가 발생했습니다.');
     }
   };
+  
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>
-  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    <img src={addTaskIcon} alt="ICON" style={{ height: '24px' }} />
-    업무 생성
-  </div>
-</h1>
+      <Title level={2} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+  <AddTaskIcon style={{ width: '32px', height: '32px' ,color:'#00844A'}} />
+  업무 생성
+</Title>
+
       
         <Form
         form={form}
@@ -637,9 +812,7 @@ const dayMapping: Record<number, string> = {
           frequencyType: 'daily',
           weeklyDay: [dayMapping[dayjs().day()]],
           isRecurring:false,
-          hasEndDate:false,
-          monthlyOption:'dayOfMonth',
-          yearlyOption:'yearlyDayOfMonth'
+          hasEndDate:hasEndDate,
         }}
         labelCol={{ span: 4 }}
         wrapperCol={{ span: 20 }}
@@ -722,11 +895,17 @@ const dayMapping: Record<number, string> = {
       <div style={{ 
         width: '100%', 
         display: 'flex', 
+        padding:'0 50px'
+    }}>
+      <Card style={{ 
+        width: '100%', 
+        display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center', 
-        gap: '16px', 
-        border: '1px solid #000', 
-        justifyContent: 'center'
+        gap: '16px',  
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        justifyContent: 'center',
+        marginBottom:'40px'
         
     }}>
       <Form.Item
@@ -742,8 +921,10 @@ const dayMapping: Record<number, string> = {
             style={{
               width: '100%',
               display: 'flex', // 버튼들을 한 줄로 정렬
-              
+              marginBottom:'20px'
             }}
+            optionType="button"
+            buttonStyle="solid"
           >
             <Radio.Button  style={{ flex: '1', textAlign: 'center', whiteSpace:'nowrap' }} value="daily">매일</Radio.Button>
             <Radio.Button  style={{ flex: '1', textAlign: 'center', whiteSpace:'nowrap' }} value="weekly">매주</Radio.Button>
@@ -752,20 +933,21 @@ const dayMapping: Record<number, string> = {
           </Radio.Group>
         </Form.Item>
         {handleFrequencyOptions()}
+      </Card>
       </div>
     )}
 
 {/* 프로세스 */}
 <Form.Item
   label="ITO 프로세스"
-  name="processId"
+  name="itoProcessId"
   rules={[{ required: true, message: '프로세스를 선택하세요.' }]}
 >
   <Select
     placeholder="프로세스를 선택하세요"
     size="large"
-    value={processId}
-    onChange={(value:string) => setProcessId(value)}
+    value={itoProcessId}
+    onChange={(value:string) => setItoProcessId(value)}
     allowClear
   >
     <Select.Option value="1">리포팅</Select.Option>
@@ -789,6 +971,7 @@ const dayMapping: Record<number, string> = {
           <Select
           size="large"
             placeholder="프로젝트를 선택하세요"
+            onChange={(value:string)=>setProjectId(value)}
           >
             {projectList.map((project: any) => (
               <Option key={project.projectId} value={project.projectId}>
@@ -808,14 +991,14 @@ const dayMapping: Record<number, string> = {
           size="large"
       mode="multiple"
       style={{ width: '100%' }}
-      placeholder="Select users"
+      placeholder="담당자를 선택하세요."
 
     >
       {userList.map((user) => (
         <Option key={user.userId} value={user.userId}>
           <Space>
-            <Avatar src={user.profileImage} />
-            {user.userName}
+            <Avatar src={`http://localhost:8080/${user.photo}`} />
+            {user.name}
           </Space>
         </Option>
       ))}

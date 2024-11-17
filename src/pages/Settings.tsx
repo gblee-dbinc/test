@@ -4,6 +4,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { UserOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd';
 import { Option } from 'antd/es/mentions';
+import { toast } from "react-toastify";
 
 const { Title, Text } = Typography;
 
@@ -12,19 +13,17 @@ const Settings = () => {
   const [editing, setEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  const [userInfo, setUserInfo] = useState({
-    name: '홍길동',
-    email: 'hong@example.com',
-    phone: '010-1234-5678',
-    position: '프로',
-    projects: ['프로젝트 A', '프로젝트 B'],
-    part: '네트워크',
-  });
+  
+
+  const [userInfo, setUserInfo] = useState(sessionStorage.getItem("userInfo")
+  ? JSON.parse(sessionStorage.getItem("userInfo") as string)
+  : null);
 
   const handleFinish = (values: any) => {
     setUserInfo(values);
     setEditing(false);
-    message.success('회원정보가 수정되었습니다.');
+    // message.success('회원정보가 수정되었습니다.');
+    toast.success('회원정보가 수정되었습니다. ')
   };
 
   const handleUpload = (info: any) => {
@@ -36,6 +35,8 @@ const Settings = () => {
       reader.readAsDataURL(info.file.originFileObj);
     }
   };
+
+  const tagColors = ['blue', 'green', 'red', 'orange', 'purple']; // 사용할 색상 배열
 
   return (
     <div
@@ -51,7 +52,7 @@ const Settings = () => {
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
           <Avatar
             size={80}
-            src={profileImage || 'https://via.placeholder.com/100'}
+            src={userInfo.photo || 'https://via.placeholder.com/100'}
             icon={!profileImage && <UserOutlined />}
             style={{ marginRight: '20px' }}
           />
@@ -98,7 +99,7 @@ const Settings = () => {
             >
               <Input size="large"/>
             </Form.Item>
-            <Form.Item label="소속 프로젝트" name="projects" rules={[{ required: true }]}>
+            <Form.Item label="프로젝트" name="projectId" rules={[{ required: true }]}>
               <Select
                 mode="multiple"
                 size="large"
@@ -107,7 +108,7 @@ const Settings = () => {
                 disabled
               />
             </Form.Item>
-            <Form.Item label="파트" name="part" rules={[{ required: true }]}>
+            <Form.Item label="파트" name="unit" rules={[{ required: true }]}>
               <Select size="large" style={{ flex: 1, minWidth: '150px' }} allowClear>
                 <Option value="OS">OS</Option>
                 <Option value="MW">미들웨어</Option>
@@ -118,7 +119,7 @@ const Settings = () => {
             </Form.Item>
             <Form.Item
               label="전화번호"
-              name="phone"
+              name="phoneNumber"
               rules={[
                 { required: true, message: '전화번호를 입력해주세요.' },
                 { pattern: /^010-\d{4}-\d{4}$/, message: '010-1234-5678 형식으로 입력해주세요.' },
@@ -150,20 +151,24 @@ const Settings = () => {
               <Text style={{fontSize:'16px'}}>{userInfo.email}</Text>
             </div>
             <div>
-              <Text strong style={{fontSize:'18px', marginRight:'10px'}}>프로젝트:</Text>{' '}
-              {userInfo.projects.map((project, index) => (
-                <Tag key={index} color="blue" style={{ marginBottom: '5px' }}>
-                  <span style={{fontSize:'16px'}}>{project}</span>
+              <Text strong style={{ fontSize: '18px', marginRight: '10px' }}>프로젝트:</Text>{' '}
+              {userInfo.projectId.map((item:string,index:number) => (
+                <Tag 
+                  key={index} 
+                  color={tagColors[index % tagColors.length]} // 색상을 순환적으로 할당
+                  style={{ marginBottom: '5px' }}
+                >
+                  <span style={{ fontSize: '16px' }}>{item}</span>
                 </Tag>
               ))}
             </div>
             <div>
               <Text strong style={{fontSize:'18px', marginRight:'10px'}}>파트:</Text> 
-              <Text style={{fontSize:'16px'}}>{userInfo.part}</Text>
+              <Text style={{fontSize:'16px'}}>{userInfo.unit}</Text>
             </div>
             <div>
               <Text strong style={{fontSize:'18px', marginRight:'10px'}}>전화번호:</Text> 
-              <Text style={{fontSize:'16px'}}>{userInfo.phone}</Text>
+              <Text style={{fontSize:'16px'}}>{userInfo.phoneNumber}</Text>
             </div>
             <div style={{display:'flex', width:'100%', justifyContent:'right'}}>
             <Button icon={<EditOutlined />} size="large"  type="default" onClick={() => setEditing(true)}>

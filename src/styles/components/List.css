@@ -28,3 +28,7 @@
     padding: 13px 13px !important;
   }
   
+
+  .ant-avatar-group .ant-avatar {
+    border: none !important;
+}

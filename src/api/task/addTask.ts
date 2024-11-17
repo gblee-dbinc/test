@@ -27,8 +27,10 @@ interface AddTaskData {
     projectId: string;
     taskName: string;
     description: string;
+    
     // assigneeId: string;
     assigneeIds: string[];
+    
     createdDate: string;
     startDate: string;
     dueDate: string;
@@ -51,12 +53,12 @@ interface AddTaskData {
   }
 
 
-export const addTask = async (taskData: AddTaskData) => {
+export const addTask = async (taskData: Record<string, any>) => {
     try {
         // Set dueDate to be the same as startDate
         const fullTaskData = {
             ...taskData,
-            dueDate: taskData.startDate,
+            assigneeConfirmation: "N"
         };
 
         const response = await apiClient.post(`/tasks/addTaskMultiple`, fullTaskData);

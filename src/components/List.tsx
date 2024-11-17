@@ -1,62 +1,54 @@
 import React from 'react';
-import { Table, Tag, Avatar, Typography } from 'antd';
+import { Table, Tag, Avatar, Typography, Tooltip } from 'antd';
 import '../styles/components/List.css'; // CSS 파일 추가
+import StatusTag from "./StatusTag";
+import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
 
-const tasks = [
-  {
-    id: 1,
-    title: '업무 1',
-    assignee: { name: '김철수', profile: 'https://i.pravatar.cc/40?img=1' },
-    status: '진행 중',
-    dueDate: '2024-11-15',
-  },
-  {
-    id: 2,
-    title: '업무 2',
-    assignee: { name: '이영희', profile: 'https://i.pravatar.cc/40?img=2' },
-    status: '완료',
-    dueDate: '2024-11-14',
-  },
-  {
-    id: 3,
-    title: '업무 3',
-    assignee: { name: '박민수', profile: 'https://i.pravatar.cc/40?img=3' },
-    status: '시작 전',
-    dueDate: '2024-11-18',
-  },
-  {
-    id: 4,
-    title: '업무 4',
-    assignee: { name: '최가영', profile: 'https://i.pravatar.cc/40?img=4' },
-    status: '지연',
-    dueDate: '2024-11-10',
-  },
-  {
-    id: 5,
-    title: '업무 5',
-    assignee: { name: '홍길동', profile: 'https://i.pravatar.cc/40?img=5' },
-    status: '진행 중',
-    dueDate: '2024-11-20',
-  },
-];
+interface Assignee {
+  assigneeId: string;
+  assigneeName: string;
+  assigneeProfile: string;
+}
+interface Task {
+  taskId: string;
+  projectId: number;
+  taskName: string;
+  description: string;
+  assignees: Assignee[];
+  createdDate: string;
+  startDate: string;
+  dueDate: string;
+  frequencyId: number;
+  commentCount: number;
+  status: number;
+  itoProcessId: number;
+  assigneeConfirmation: string;
+}
 
-const List = () => {
+interface ListProps {
+  taskList: Task[];
+  loading: boolean;
+}
+
+const List: React.FC<ListProps> = ({ taskList, loading }) => {
+  
+  const navigate = useNavigate(); // navigate 함수 사용
+
   const columns = [
     {
       title: 'No.',
-      dataIndex: 'id',
-      key: 'id',
+      key: 'index',
       align: 'center' as 'center',
-      render: (text: number) => <Text>{text}</Text>,
+      render: (_: any, __: any, index: number) => <Text>{index + 1}</Text>,
     },
     {
       title: '업무명',
-      dataIndex: 'title',
+      dataIndex: 'taskName',
       align: 'center' as 'center',
-      key: 'title',
-      render: (text: string) => (
+      key: 'taskName',
+      render: (taskName: string) => (
         <div
           style={{
             backgroundColor: '#f5f5f5',
@@ -67,41 +59,56 @@ const List = () => {
             display: 'inline-block',
           }}
         >
-          {text}
+          {taskName}
         </div>
       ),
     },
     {
       title: '담당자',
-      dataIndex: 'assignee',
-      key: 'assignee',
+      dataIndex: 'assignees',
+      key: 'assignees',
       align: 'center' as 'center',
-      render: (assignee: { name: string; profile: string }) => (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent:'center', gap: '8px' }}>
-          <Avatar src={assignee.profile} size="small" />
-          <Text>{assignee.name}</Text>
-        </div>
-      ),
+      render: (assignees: Assignee[]) => {
+        if (assignees.length === 1) {
+          // 담당자가 1명일 경우 기존 방식
+          const { assigneeProfile, assigneeName } = assignees[0];
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Avatar src={assigneeProfile} size="small" />
+              <Text>{assigneeName}</Text>
+            </div>
+          );
+        }
+
+        // 담당자가 2명 이상일 경우 Avatar.Group 사용
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+            <Avatar.Group
+              maxCount={2}
+              maxStyle={{ color: '#f56a00' }}
+            >
+              {assignees.map((assignee, index) => (
+                <Tooltip key={index} title={assignee.assigneeName} placement="top">
+                  <Avatar src={assignee.assigneeProfile}/>
+                </Tooltip>
+              ))}
+            </Avatar.Group>
+            <Text>
+              {assignees[0]?.assigneeName} 외 {assignees.length - 1}명
+            </Text>
+          </div>
+        );
+      },
     },
     {
       title: '진행상태',
       dataIndex: 'status',
       key: 'status',
       align: 'center' as 'center',
-      render: (status: string) => (
-        <Tag
-          color={
-            status === '진행 중'
-              ? 'blue'
-              : status === '완료'
-              ? 'green'
-              : status === '시작 전'
-              ? 'gray'
-              : 'red'
-          }
-        >
-          {status}
-        </Tag>
+      render: (status: number) => (
+      <div>
+        {StatusTag(status)}
+      </div>
       ),
     },
     {
@@ -113,14 +120,23 @@ const List = () => {
     },
   ];
 
+  // 행 클릭 이벤트 처리 함수
+  const handleRowClick = (record: { taskId: string }) => {
+    navigate(`/tasks/detail?taskId=${record.taskId}`); // 해당 taskId로 이동
+  };
+
   return (
     <Table
-      dataSource={tasks}
+      dataSource={taskList}
       columns={columns}
       pagination={false}
-      rowKey="id"
+      rowKey="taskId"
       bordered={false}
       className="custom-table"
+      locale={{ emptyText: '등록된 업무가 없습니다.' }} // 데이터가 없을 때 표시할 메시지
+      onRow={(record) => ({
+        onClick: () => handleRowClick(record), // 행 클릭 시 이벤트 호출
+      })}
     />
   );
 };

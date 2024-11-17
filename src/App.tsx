@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 
 import {
   AppstoreOutlined,
@@ -9,6 +12,7 @@ import {
   MenuOutlined,
   SettingOutlined,
 } from '@ant-design/icons';
+
 import { Link, useLocation } from 'react-router-dom';
 import Dashboard from "./pages/Dashboard";
 import TaskList from "./pages/TaskList";
@@ -23,21 +27,20 @@ import './styles/pages/SideBar.css';
 import AddTask from "./pages/AddTask";
 import DetailTask from "./pages/DetailTask";
 import EditTask from './pages/EditTask';
+import SignUp from "./pages/SignUp";
+import Login from "./pages/Login";
 
 const { Sider, Content } = Layout;
 
-
-// Props 타입 정의
-// Props 타입 정의
+// SideBar 컴포넌트 정의
 type SideBarProps = {
   collapsed: boolean;
-  onCollapse: (collapsed: boolean) => void; // 상태 업데이트 콜백
+  onCollapse: (collapsed: boolean) => void;
   onLogout: () => void;
 };
 
 const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) => {
   const location = useLocation();
-
   return (
     <Sider
       width={220}
@@ -174,44 +177,59 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
   );
 };
 
+// App 컴포넌트 정의
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
 
+  return (
+    <Router>
+      <ToastContainer />
+      <Routes>
+        {/* 로그인 및 회원가입 */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+
+        {/* 메인 레이아웃 */}
+        <Route
+          path="*"
+          element={
+            <MainLayout collapsed={collapsed} setCollapsed={setCollapsed} />
+          }
+        />
+      </Routes>
+    </Router>
+  );
+};
+
+// MainLayout 컴포넌트 정의
+const MainLayout: React.FC<{ collapsed: boolean; setCollapsed: React.Dispatch<React.SetStateAction<boolean>> }> = ({
+  collapsed,
+  setCollapsed,
+}) => {
+  const navigate = useNavigate(); // 여기서 `useNavigate` 호출
   const handleLogout = () => {
-    console.log('로그아웃 버튼 클릭');
+    sessionStorage.removeItem('userInfo');
+    toast.success('로그아웃되었습니다.');
+    navigate('/login');
   };
 
   return (
-    <Router>
-      <Layout style={{ height: '100vh' }}>
-        {/* 사이드바 및 메뉴 */}
-        <SideBar
-        collapsed={collapsed}
-        onCollapse={setCollapsed} // 화면 크기 변화에 따라 상태 업데이트
-        onLogout={handleLogout}
-      />
-
-        {/* Content */}
-        <Layout>
-          <Content
-            style={{
-              backgroundColor: '#fff',
-              overflow: 'auto',
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/tasks" element={<TaskList />} />
-              <Route path="/tasks/add" element={<AddTask />} />
-              <Route path="/tasks/detail" element={<DetailTask />} />
-              <Route path="/tasks/edit" element={<EditTask />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/settings" element={<Settings />} />
-            </Routes>
-          </Content>
-        </Layout>
+    <Layout style={{ height: '100vh' }}>
+      <SideBar collapsed={collapsed} onCollapse={setCollapsed} onLogout={handleLogout} />
+      <Layout>
+        <Content style={{ backgroundColor: '#fff', overflow: 'auto' }}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/tasks" element={<TaskList />} />
+            <Route path="/tasks/add" element={<AddTask />} />
+            <Route path="/tasks/detail" element={<DetailTask />} />
+            <Route path="/tasks/edit" element={<EditTask />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </Content>
       </Layout>
-    </Router>
+    </Layout>
   );
 };
 

@@ -17,7 +17,18 @@
     --fc-border-color: none;
   }
 
+  .today-cell {
+    border-radius: 50%;
+    background-color: #87CEFA;
+    border: 2px solid #4682B4;
+    color: white !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
   
+  .fc-daygrid-day-top {
+    display: flex !important;
+    width: 100% !important;
+  }
   
   .fc-daygrid-day-events{
     display: none;

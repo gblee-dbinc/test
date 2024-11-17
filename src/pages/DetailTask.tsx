@@ -1,128 +1,218 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Tag, Avatar, Input, Button, Space, Typography, List, Popconfirm, Tooltip } from 'antd';
 import {
-  CalendarOutlined,
-  UserOutlined,
-  FileTextOutlined,
-  MessageOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  CheckOutlined,
-  HeartFilled,
-  HeartOutlined,
-  SyncOutlined, 
-  FlagOutlined
+    CalendarOutlined,
+    UserOutlined,
+    FileTextOutlined,
+    MessageOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    CheckOutlined,
+    HeartFilled,
+    HeartOutlined,
+    SyncOutlined, 
+    FlagOutlined
 } from '@ant-design/icons';
 
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StatusTag from '../components/StatusTag';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { deleteComment } from "../api/comment/deleteComment";
+import { addComment } from "../api/comment/addComment";
+import { addLiketoComment } from "../api/comment/addLiketoComment";
+import { deleteTask } from "../api/task/deleteTask";
+import { toast } from "react-toastify";
+import { getTaskById } from "../api/task/getTaskById";
+import dayjs from "dayjs";
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
 
-
+interface Assignee {
+    assigneeId: string;
+    assigneeName: string;
+    assigneeProfile: string;
+  }
+interface Task {
+    createdBy: string;
+    taskId: string;
+    projectId: number;
+    taskName: string;
+    description: string;
+    assignees: Assignee[];
+    createdDate: string;
+    startDate: string;
+    dueDate: string;
+    frequencyId: number;
+    commentCount: number;
+    status: 0 | 1 | 2 | 3; // 진행 상태는 0~3으로 제한
+    itoProcessId: string;
+    assigneeConfirmation: string;
+    isRecurring: boolean;
+  }
+  
+  
+  interface Comment {
+    commentId: bigint;
+    commenter: {
+        commenterId: string;
+        commenterName: string;
+        commenterProfile: string;
+    }
+    commentContent: string;
+    createDate: string;
+    likeCount: number;
+    likedUsers: string[];
+  }
 
 const processColors: { [key: string]: string } = {
-  리포팅: 'geekblue', // 진한 파랑
-  보안: 'orange',      // 주황색
-  용량: 'lime',        // 연두색
-  변경: 'gold',        // 황금색
-  가용성: 'purple',    // 보라색
-  감사지원: 'magenta', // 자홍색
-  구성: 'cyan',        // 청록색
-  배포: 'volcano',     // 화산색 (붉은 주황색)
+    리포팅: 'geekblue', // 진한 파랑
+    보안: 'orange',      // 주황색
+    용량: 'lime',        // 연두색
+    변경: 'gold',        // 황금색
+    가용성: 'purple',    // 보라색
+    감사지원: 'magenta', // 자홍색
+    구성: 'cyan',        // 청록색
+    배포: 'volcano',     // 화산색 (붉은 주황색)
 };
 
 const DetailTask: React.FC = () => {
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: '홍길동',
-      authorId: 'user1', // 작성자 ID
-      avatar: 'https://via.placeholder.com/40',
-      content: '첫 번째 댓글입니다!',
-      date: '2024-11-12',
-      isLiked: false, // 좋아요 상태
-      likeCount: 1
-    },
-    {
-      id: 2,
-      author: '김영희',
-      authorId: 'user2', // 작성자 ID
-      avatar: 'https://via.placeholder.com/40',
-      content: '두 번째 댓글입니다!',
-      date: '2024-11-12',
-      isLiked: false, // 좋아요 상태
-      likeCount: 0
-    },
-  ]);
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const taskId = searchParams.get('taskId');
+    const [task, setTask] = useState<Task | undefined>(undefined);
+    const [error, setError] = useState<string | null>(null);
+    const [commentList, setCommentList] = useState<Comment[]>([]);
+    const [commentContent, setCommentContent] = useState<string>('');
+    const userInfo = sessionStorage.getItem("userInfo")
+        ? JSON.parse(sessionStorage.getItem("userInfo") as string)
+        : null;
 
-  const handleLike = (commentId:number) => {
-    setComments((prevComments) =>
-      prevComments.map((comment) =>
-        comment.id === commentId
-          ? { ...comment, isLiked: true }
-          : comment
-      )
-    );
-  };
-  
-  const currentUserId = 'user1'; // 현재 로그인된 사용자 ID
+    useEffect(() => {
+        if (taskId) {
+            const fetchData = async () => {
+                try {
+                    const taskData = await getTaskById(taskId);
+                    setTask({
+                        ...taskData,
+                        comments: undefined,
+                    });
+                    setCommentList(taskData.comments || []);
+                } catch (error) {
+                    setError("데이터를 불러오는데 실패했습니다.");
+                }
+            };
+            fetchData();
+        }
+    }, [taskId]);
 
-  const [task, setTask] = useState({
-    taskName: '주간 리포팅 작성',
-    status: 2,
-    startDate: '2024-11-01',
-    dueDate: '2024-11-15',
-    process: '리포팅',
-    description: '매주 진행 상황에 대한 리포트를 작성합니다.',
-    isRecurring: true,
-    assignee: {
-      assigneeId: 'test',
-      name: '이수진',
-      profile: 'https://via.placeholder.com/40',
-    },
-    confirmationAssignee: 'Y'
-  });
+    const navigate = useNavigate();
 
-  const handleAddComment = (value: string) => {
-    // if (!value.trim()) return;
-    // setComments((prev) => [
-    //   ...prev,
-    //   {
-    //     id: prev.length + 1,
-    //     author: '현재 사용자',
-    //     avatar: 'https://via.placeholder.com/40',
-    //     content: value,
-    //     date: new Date().toISOString().split('T')[0],
-    //   },
-    // ]);
-  };
+    const handleEdit = () => {
+        if (task) {
+            navigate('/tasks/edit', { state: { task } });
+        }
+    };
 
-  const handleChangeStatusToComplete = () => {
+    const handleChangeStatusToComplete = async (taskId: string) => {
+        alert('change status');
+    }
+
     
-  };
+    const handleDelete= async (taskId: string) => {
+        const isConfirmed = window.confirm("정말 삭제하시겠습니까?");
+        if (!isConfirmed) {
+            return;
+        }
 
-  const navigate = useNavigate();
-  const handleEdit = () => {
-    console.log(typeof(task.dueDate))
-    navigate('/tasks/edit', { state: { task } }); // task 데이터 전달
-  };
+        try {
+            await deleteTask(taskId);
+            navigate(-1);
+        } catch (error) {
+            toast.error("Failed to delete task:");
+        }
+    };
 
-  const handleDelete = () => {
-    console.log('Delete task logic here');
-  };
+    // 로딩 상태 처리
+    if (!task) {
+        return <div>Loading...</div>;
+    }
 
-  const handleEditComment = (commentId:number) => {
-    console.log('Edit Comment logic here');
-  };
+    const processMap: { [key: string]: string } = {
+        "1": "리포팅",
+        "2": "보안",
+        "3": "용량",
+        "4": "변경",
+        "5": "가용성",
+        "6": "감사지원",
+        "7": "구성",
+        "8": "배포"
+    };
 
-  const handleDeleteComment = (commentId:number) => {
-    console.log('Delete Comment logic here');
-  };
+    const handleAddComment = async () => {
+        const userInfo = sessionStorage.getItem("userInfo")
+      ? JSON.parse(sessionStorage.getItem("userInfo") as string)
+      : null;
+
+      console.log(commentContent)
+      if (taskId && commentContent.trim() && userInfo?.userId) {
+        try {
+          const newCommentData = await addComment({
+            taskId,
+            commentContent,
+            commenterId: userInfo.userId, // 키 이름 수정
+          });
+          console.log("Comment added:", newCommentData);
+          window.location.reload(); // 페이지를 새로고침하여 변경 사항 반영
+        } catch (error) {
+          console.error("Failed to create comment:", error);
+        }
+      }
+    };
+
+    const handleLike = async (commentId: bigint) => {
+      
+        if (userInfo?.userId) {
+        try {
+            const updatedComment = await addLiketoComment(commentId, userInfo?.userId);
+            setCommentList(commentList.map(comment =>
+              comment.commentId === commentId
+                ? {
+                    ...comment,
+                    likeCount: comment.likedUsers.includes(userInfo?.userId)
+                      ? comment.likeCount - 1
+                      : comment.likeCount + 1,
+                    likedUsers: comment.likedUsers.includes(userInfo?.userId)
+                      ? comment.likedUsers.filter(id => id !== userInfo?.userId) // Remove userId if already liked
+                      : [...comment.likedUsers, userInfo?.userId], // Add userId if not already liked
+                  }
+                : comment
+            ));
+            console.log(updatedComment);
+        } catch (error) {
+            console.error("Failed to add like:", error);
+            //alert("좋아요를 추가할 수 없습니다. 다시 시도해 주세요.");
+            toast.error('이미 좋아요한 댓글입니다. 😊')
+        }
+      }
+    };
+
+    const handleDeleteComment = async (commentId: bigint, userId: string) => {
+        const isConfirmed = window.confirm("정말 삭제하시겠습니까?"); // 삭제 여부 확인
+        if (!isConfirmed) {
+            return; // 사용자가 취소한 경우 함수 종료
+        }
+    
+        try {
+            await deleteComment(commentId,userId); // taskId를 전달하여 삭제
+            window.location.reload(); // 페이지를 새로고침하여 변경 사항 반영
+        } catch (error) {
+            console.error("Failed to delete comment:", error);
+            // 에러 발생 시 사용자에게 알림을 줄 수도 있습니다.
+        }
+      };
 
   return (
      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
@@ -130,35 +220,29 @@ const DetailTask: React.FC = () => {
       {/* 카드 상단 */}
       <Card bordered={false} style={{ marginBottom: '20px' }}>
         {/* 프로세스 태그 */}
-        <Space
-  align="center"
-  style={{
-    marginBottom: '20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-  }}
->
-  {/* ITO 프로세스 태그 */}
-  <Space align="center" style={{ display: 'flex', alignItems: 'center' }}>
-    
-
-    {/* 제목 */}
-    <Title level={2} style={{ fontWeight:'bold', margin:0}}>
-      {task.taskName}
-    </Title>
-    {task.isRecurring && (
-    <SyncOutlined
-    style={{
-      fontSize: '20px',
-      color: '#c9c9c9',
-      marginLeft: '8px',
-      verticalAlign: 'middle', // 아이콘 수직 중앙 정렬
-    }}
-  />
-
-  )}
-  </Space>
+        <Space align="center"
+        style={{
+            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+        }}>
+        {/* ITO 프로세스 태그 */}
+        <Space align="center" style={{ display: 'flex', alignItems: 'center' }}>
+            {/* 제목 */}
+            <Title level={2} style={{ fontWeight:'bold', margin:0}}>
+                {task.taskName}
+            </Title>
+            {task.isRecurring && (
+                <SyncOutlined
+                style={{
+                fontSize: '20px',
+                color: '#c9c9c9',
+                marginLeft: '8px',
+                verticalAlign: 'middle', // 아이콘 수직 중앙 정렬
+                }}/>
+            )}
+        </Space>
 
   {/* 상태 */}
   
@@ -180,37 +264,66 @@ const DetailTask: React.FC = () => {
             <Space>
             <Text style={{ fontSize: '16px', fontWeight:'bold'}}>ITO 프로세스</Text>
               <Tag
-                color={processColors[task.process]}
+                color={processColors[processMap[task.itoProcessId]]}
                 style={{
                     padding: '3px 6px',
                     borderRadius: '3px',
                     margin: '0 12px',
                 }}
                 >
-                {task.process}
+                {processMap[task.itoProcessId]}
                 </Tag>
             </Space>
           
           </Space>
 
-          <Space align="center" style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <UserOutlined style={{ fontSize: '18px', color: '#1890ff' }} />
-            <Space>
-            <Text style={{ fontSize: '16px', fontWeight:'bold'}}>담당자</Text>
-              <Avatar src={task.assignee.profile} />
-              <Text> {task.assignee.name}</Text>
-              {task.confirmationAssignee==='N'
-              ?<Tooltip title="담당자 확인 전" color={'#c9c9c9'} placement="right">
-                <RadioButtonUncheckedIcon style={{color:'#c9c9c9', verticalAlign: 'middle'}}/>
-              </Tooltip>
-              :<Tooltip title="담당자 확인 완료" color={'#006AFF'} placement="right">
-                <CheckCircleIcon style={{color:'#006AFF', verticalAlign: 'middle'}}/>
+          <Space align="center" style={{ display: 'flex', alignItems: 'center' }}>
+  <UserOutlined style={{ fontSize: '18px', color: '#1890ff' }} />
+  <Space>
+  <Text style={{ fontSize: '16px', fontWeight: 'bold' }}>담당자</Text>
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    {task.assignees.length <= 2 ? (
+      // 담당자가 2명 이하일 경우, 모두 표시
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {task.assignees.map((assignee, index) => (
+          <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Avatar src={`http://localhost:8080/${assignee.assigneeProfile}`} />
+            <Text>{assignee.assigneeName}</Text>
+          </div>
+        ))}
+      </div>
+    ) : (
+      // 담당자가 3명 이상일 경우, Avatar.Group 사용
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Avatar.Group
+          maxCount={2} // 최대 표시할 Avatar 수
+          maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }} // 축약 스타일
+        >
+          {task.assignees.map((assignee, index) => (
+            <Tooltip key={index} title={assignee.assigneeName} placement="top">
+              <Avatar src={`http://localhost:8080/${assignee.assigneeProfile}`} />
             </Tooltip>
-            }
-              
-            </Space>
-          </Space>
+          ))}
+        </Avatar.Group>
+        <Text>
+          {task.assignees[0].assigneeName} 외 {task.assignees.length - 1}명
+        </Text>
+      </div>
+    )}
+  </div>
+  {task.assigneeConfirmation === 'N' ? (
+    <Tooltip title="담당자 확인 전" color={'#c9c9c9'} placement="right">
+      <RadioButtonUncheckedIcon style={{ color: '#c9c9c9', verticalAlign: 'middle' }} />
+    </Tooltip>
+  ) : (
+    <Tooltip title="담당자 확인 완료" color={'#006AFF'} placement="right">
+      <CheckCircleIcon style={{ color: '#006AFF', verticalAlign: 'middle' }} />
+    </Tooltip>
+  )}
+</Space>
+
+</Space>
+
 
           <Space>
           <FlagOutlined style={{ fontSize: '18px', color: '#00844A' }} />
@@ -233,11 +346,11 @@ const DetailTask: React.FC = () => {
         {/* 버튼 */}
         <div style={{ marginTop: '20px', textAlign: 'right' }}>
         {
-            task.status!==2?
+            task.status!==2&&task.assignees.some(assignee => assignee.assigneeId === userInfo.userId)?
                 <Button
                 type="primary"
                 icon={<CheckOutlined />}
-                onClick={handleChangeStatusToComplete}
+                onClick={()=>handleChangeStatusToComplete(task.taskId)}
                 style={{ marginRight: '8px' }}
                 >
                 완료
@@ -245,8 +358,10 @@ const DetailTask: React.FC = () => {
               :<></>
         }
           
-
-          <Button
+          {
+            task.createdBy === userInfo.userId ?
+                <>
+                <Button
             type="default"
             icon={<EditOutlined />}
             onClick={handleEdit}
@@ -254,67 +369,74 @@ const DetailTask: React.FC = () => {
           >
             수정
           </Button>
-          <Popconfirm title="정말 삭제하시겠습니까?" onConfirm={handleDelete}>
+        <Popconfirm
+            title="정말 삭제하시겠습니까?"
+            onConfirm={() => handleDelete(task.taskId)} // taskId를 익명 함수로 전달
+        >
             <Button type="default" danger icon={<DeleteOutlined />}>
-              삭제
+                삭제
             </Button>
-          </Popconfirm>
+        </Popconfirm>
+                </>
+              :<></>
+        }
+          
+
         </div>
       </Card>
 
       {/* 댓글 섹션 */}
       <Card bordered={false} title={<h3><MessageOutlined /> 댓글</h3>}>
         <List
-          dataSource={comments}
+            locale={{ emptyText: '등록된 댓글이 없습니다.' }} // 데이터가 없을 때 표시할 메시지
+          dataSource={commentList}
           renderItem={(comment) => (
             <List.Item style={{ display: 'flex', alignItems: 'flex-start' }}>
-  {/* 프로필 */}
-  <Avatar src={comment.avatar} size={48} style={{ marginRight: '16px' }} />
+                {/* 프로필 */}
+                <Avatar src={`http://localhost:8080/${comment.commenter.commenterProfile}`} size={48} style={{ marginRight: '16px' }} />
+                {/* 댓글 내용 */}
+                <div style={{ flex: 1 }}>
+                    {/* 작성자와 날짜 */}
+                    <div>
+                        <Text strong>{comment.commenter.commenterName}</Text>
+                        <Text type="secondary" style={{ marginLeft: '8px' }}>
+                        {dayjs(comment.createDate).format('YYYY/MM/DD HH:mm')}
+                        </Text>
+                    </div>
 
-  {/* 댓글 내용 */}
-  <div style={{ flex: 1 }}>
-    {/* 작성자와 날짜 */}
-    <div>
-      <Text strong>{comment.author}</Text>
-      <Text type="secondary" style={{ marginLeft: '8px' }}>
-        {comment.date}
-      </Text>
-    </div>
+                    {/* 댓글 내용 */}
+                    <div style={{ marginTop: '8px' }}>{comment.commentContent}</div>
 
-    {/* 댓글 내용 */}
-    <div style={{ marginTop: '8px' }}>{comment.content}</div>
+                    {/* 좋아요 버튼 */}
+                    <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
+                        <Button
+                            type="text"
+                            icon={comment.likedUsers.includes(userInfo?.userId) ? <HeartFilled style={{ color: 'red' }} /> : <HeartOutlined />}
+                            onClick={() => handleLike(comment.commentId)}
+                        />
+                        <Text style={{ marginLeft: '8px' }}>{comment.likeCount}</Text>
+                    </div>
+                </div>
 
-    {/* 좋아요 버튼 */}
-    <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
-      <Button
-        type="text"
-        icon={comment.isLiked ? <HeartFilled style={{ color: 'red' }} /> : <HeartOutlined />}
-        onClick={() => handleLike(comment.id)}
-      />
-      <Text style={{ marginLeft: '8px' }}>{comment.likeCount}</Text>
-    </div>
-  </div>
-
-  {/* 삭제 버튼 (작성자만 표시) */}
-  {comment.authorId === currentUserId && (
-    <div style={{ marginLeft: '16px' }}>
-      <Popconfirm
-        title="댓글을 삭제하시겠습니까?"
-        onConfirm={() => handleDeleteComment(comment.id)}
-      >
-        <Button type="text" danger icon={<DeleteOutlined />} />
-      </Popconfirm>
-    </div>
-  )}
-</List.Item>
-
-          
-
-          )}
+                {/* 삭제 버튼 (작성자만 표시) */}
+                {comment.commenter.commenterId === userInfo.userId && (
+                    <div style={{ marginLeft: '16px' }}>
+                    <Popconfirm
+                        title="댓글을 삭제하시겠습니까?"
+                        onConfirm={() => handleDeleteComment(comment.commentId, userInfo.userId)}
+                    >
+                        <Button type="text" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                    </div>
+                )}
+            </List.Item>
+            )}
         />
         <Space direction="vertical" style={{ width: '100%', marginTop: '20px', textAlign: 'right' }}>
-          <TextArea rows={3} placeholder="댓글을 작성하세요..." />
-          <Button type="primary" onClick={() => handleAddComment('새 댓글')}>
+          <TextArea rows={3} placeholder="댓글을 작성하세요." value={commentContent} // 상태값과 연동
+        onChange={(e) => setCommentContent(e.target.value)} // 상태값 업데이트
+        />
+          <Button type="primary" onClick={() => handleAddComment()}>
             댓글 작성
           </Button>
         </Space>

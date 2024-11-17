@@ -1,8 +1,6 @@
 import apiClient from '../apiClient';
 import qs from 'qs';
 
-
-
 export const getAllTask = async (projectIds: string[], page: number, size: number) => {
   try {
     const response = await apiClient.get(`/tasks`, {

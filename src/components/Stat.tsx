@@ -1,26 +1,90 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Typography, Grid, Badge } from 'antd';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { getStatisticsByProjectId } from "../api/statistics/getStatisticsByProjectId";
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 // Chart.js의 기본 요소를 등록합니다.
 ChartJS.register(ArcElement, Tooltip, Legend);
+interface Statistics {
+    projectId: string;
+    month: string;
+    totalTasks: number;
+    beforePercentage: number;
+    progressPercentage: number;
+    completePercentage: number;
+    delayedPercentage: number;
+    previousBeforePercentage: number;
+    previousProgressPercentage: number;
+    previousCompletePercentage: number;
+    previousDelayedPercentage: number;
+    [key: string]: number | string; // 추가적인 키 접근 허용
+  }
+  
+
+interface StatisticsResponse {
+    statistics: Statistics;
+    beforeIncrease: number;
+    progressIncrease: number;
+    completeIncrease: number;
+    delayedIncrease: number;
+}
 
 const Stat: React.FC = () => {
+
+    const [statisticsData, setStatisticsData] = useState<StatisticsResponse | null>(null);
+
+    useEffect(() => {
+        const fetchStatistics = async () => {
+            const userInfo = sessionStorage.getItem("userInfo")
+                ? JSON.parse(sessionStorage.getItem("userInfo") as string)
+                : null;
+
+            if (userInfo && userInfo.projectId) {
+                const projectIds = userInfo.projectId; // 배열로 정의
+                const currentDate = new Date();
+                const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // MM format
+                const year = currentDate.getFullYear().toString();
+
+                try {
+                    const resStatisticsData = await getStatisticsByProjectId(projectIds, `${year}-${month}`);
+                    console.log(resStatisticsData)
+                    setStatisticsData(resStatisticsData);
+                } catch (error) {
+                    console.error("Error fetching statistics:", error);
+                }
+            }
+        };
+
+        fetchStatistics();
+    }, []);
+
+    
   const screens = useBreakpoint(); // 화면 크기 감지
-  const hasData = true; // 더미 데이터 유무
+  const hasData = !!(statisticsData?.statistics?.totalTasks && statisticsData.statistics.totalTasks > 0);
   const data = {
     labels: ['시작 전', '진행 중', '완료', '지연'],
     datasets: [
       {
-        data: hasData ? [30, 40, 20, 10] : [1],
-        backgroundColor: ['#CECECE', '#0887C9', '#86C440', '#DB4A26'],
-        borderColor: ['#FFF'],
-        borderWidth: 1,
-        cutout: '75%',
+        data: hasData
+                ? [
+                    statisticsData?.statistics.beforePercentage ?? 0,
+                    statisticsData?.statistics.progressPercentage ?? 0,
+                    statisticsData?.statistics.completePercentage ?? 0,
+                    statisticsData?.statistics.delayedPercentage ?? 0,
+                ]
+                : [1],   // 데이터가 없을 때 전체를 100%로 표시 // 데이터가 없을 때 100%로 표시
+            backgroundColor: hasData
+                ? ['#CECECE', '#0887C9', '#86C440', '#DB4A26']
+                : ['#E0E0E0'],  // 데이터가 없을 때 회색
+            borderColor: hasData
+                ? ['#CECECE', '#0887C9', '#86C440', '#DB4A26']
+                : ['#E0E0E0'],
+            borderWidth: 1,
+            cutout: '75%',
       },
     ],
   };
@@ -86,25 +150,83 @@ const Stat: React.FC = () => {
         </div>
 
         {hasData ? (
-          <ul style={{ padding: 0, marginTop: '20px', listStyle: 'none' }}>
-            {['시작 전', '진행 중', '완료', '지연'].map((label, index) => (
-              <li
-                key={index}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '8px',
-                }}
-              >
-                <div>
-                <Badge color={badgeStatus[index]} text={label}/>
-                  
-                </div>
-                <div>
-                  <span>%</span>
-                </div>
-              </li>
-            ))}
+  <ul style={{ padding: 0, marginTop: '20px', listStyle: 'none' }}>
+    {['시작 전', '진행 중', '완료', '지연'].map((label, index) => {
+      const percentageKey = [
+        'beforePercentage',
+        'progressPercentage',
+        'completePercentage',
+        'delayedPercentage',
+      ][index] as keyof Statistics; // 타입 캐스팅
+      const increaseKey = [
+        'beforeIncrease',
+        'progressIncrease',
+        'completeIncrease',
+        'delayedIncrease',
+      ][index] as keyof StatisticsResponse;
+
+      const increaseValue = statisticsData?.[increaseKey]; // 값 가져오기
+
+      return (
+        <li
+          key={index}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: '8px',
+          }}
+        >
+          <div>
+            <Badge color={badgeStatus[index]} text={label} style={{fontWeight:'bold'}} />
+          </div>
+          <div
+  style={{
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '10px',
+    alignItems: 'center', // 세로 가운데 정렬
+  }}
+>
+  {/* % 수치: 오른쪽 정렬 */}
+  <p
+    style={{
+      margin: 0,
+      textAlign: 'right',
+      flex: 1, // 오른쪽으로 밀려남
+    }}
+  >
+    {statisticsData?.statistics?.[percentageKey] ?? 0}%
+  </p>
+
+  {/* 화살표 또는 -: 가운데 정렬 */}
+  <p
+    style={{
+      margin: 0,
+      textAlign: 'center',
+      width: '20px', // 고정된 너비로 화살표 정렬
+      color: // 조건에 따라 색상 변경
+        typeof increaseValue === 'number'
+          ? increaseValue > 0
+            ? '#DB4A26' // 증가 시 빨간색
+            : increaseValue < 0
+            ? '#0887C9' // 감소 시 파란색
+            : '#000' // 동일할 경우 검정색
+          : '#000',
+    }}
+  >
+    {typeof increaseValue === 'number'
+      ? increaseValue > 0
+        ? '↑'
+        : increaseValue < 0
+        ? '↓'
+        : '-'
+      : '-'}
+  </p>
+</div>
+
+        </li>
+      );
+    })}
           </ul>
         ) : (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
