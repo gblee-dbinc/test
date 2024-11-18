@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Tag, Avatar, Input, Button, Space, Typography, List, Popconfirm, Tooltip } from 'antd';
+import { Card, Tag, Avatar, Input, Button, Space, Typography, List, Popconfirm, Tooltip, Modal } from 'antd';
 import {
     CalendarOutlined,
     UserOutlined,
@@ -27,6 +27,7 @@ import { toast } from "react-toastify";
 import { getTaskById } from "../api/task/getTaskById";
 import dayjs from "dayjs";
 import { updateTaskStatus } from '../api/task/updateTaskStatus';
+import { deleteRelatedTasks } from "../api/task/deleteRelatedTasks";
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -127,15 +128,58 @@ const DetailTask: React.FC = () => {
     }
 
     
-    const handleDelete= async (taskId: string) => {
+    // const handleDelete= async (taskId: string) => {
+        
+        // try {
+        //     await deleteTask(taskId);
+        //     navigate(-1);
+        // } catch (error) {
+        //     toast.error("Failed to delete task:");
+        // }
+    // };
+
+
+
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleDelete = async (taskId: string, deleteAll: boolean) => {
+    try {
+      if (deleteAll) {
+        // 앞 10자리 기준으로 모든 관련 반복 업무 삭제
         
         try {
-            await deleteTask(taskId);
+            const taskIdPrefix = taskId.slice(0, 10);
+            await deleteRelatedTasks(taskIdPrefix);
+            toast.success("업무가 정상적으로 삭제되었습니다!");
             navigate(-1);
         } catch (error) {
-            toast.error("Failed to delete task:");
+            toast.error("업무를 정상적으로 삭제하지 못했습니다.");
         }
-    };
+      } else {
+        // 개별 업무 삭제
+        try {
+            await deleteTask(taskId);
+            toast.success("업무가 정상적으로 삭제되었습니다!");
+            navigate(-1);
+        } catch (error) {
+            toast.error("업무를 정상적으로 삭제하지 못했습니다.");
+        }
+      }
+      navigate(-1); // 이전 페이지로 이동
+    } catch (error) {
+      toast.error("업무 삭제에 실패했습니다.");
+    }
+  };
+
+  const confirmDelete = (taskId: string) => {
+    if (taskId.length > 10) {
+      // 반복 업무인 경우 추가 모달 표시
+      setIsModalVisible(true);
+    } else {
+      // 단일 업무 삭제
+      handleDelete(taskId, false);
+    }
+  };
 
     // 로딩 상태 처리
     if (!task) {
@@ -283,7 +327,7 @@ const DetailTask: React.FC = () => {
   <Space>
   <Text style={{ fontSize: '16px', fontWeight: 'bold' }}>담당자</Text>
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    {task.assignees.length <= 2 ? (
+    {task.assignees.length <= 5 ? (
       // 담당자가 2명 이하일 경우, 모두 표시
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         {task.assignees.map((assignee, index) => (
@@ -298,7 +342,7 @@ const DetailTask: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Avatar.Group
           maxCount={2} // 최대 표시할 Avatar 수
-          maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }} // 축약 스타일
+          
         >
           {task.assignees.map((assignee, index) => (
             <Tooltip key={index} title={assignee.assigneeName} placement="top">
@@ -375,14 +419,39 @@ const DetailTask: React.FC = () => {
           >
             수정
           </Button>
-        <Popconfirm
-            title="정말 삭제하시겠습니까?"
-            onConfirm={() => handleDelete(task.taskId)} // taskId를 익명 함수로 전달
-        >
-            <Button type="default" danger icon={<DeleteOutlined />}>
-                삭제
-            </Button>
-        </Popconfirm>
+        
+        
+          <>
+      {/* 삭제 버튼 */}
+      <Popconfirm
+        title="정말 삭제하시겠습니까?"
+        onConfirm={()=>confirmDelete(task.taskId)} // 삭제 확인 시 confirmDelete 호출
+      >
+        <Button type="default" danger icon={<DeleteOutlined />}>
+          삭제
+        </Button>
+      </Popconfirm>
+
+      {/* 추가 모달: 반복 업무 삭제 여부 확인 */}
+      <Modal
+        title="반복 업무 삭제"
+        visible={isModalVisible}
+        onOk={() => {
+          handleDelete(task.taskId, true); // 모든 반복 업무 삭제
+          setIsModalVisible(false);
+        }}
+        onCancel={() => {
+            handleDelete(task.taskId, false);
+            setIsModalVisible(false)
+        }}
+        okText="모두 삭제"
+        cancelText="이 업무만 삭제"
+      >
+        <p>이 업무는 반복 업무입니다. 관련된 모든 반복 업무를 삭제하시겠습니까?</p>
+      </Modal>
+    </>
+
+
                 </>
               :<></>
         }

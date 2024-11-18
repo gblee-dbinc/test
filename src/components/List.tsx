@@ -129,19 +129,28 @@ const List: React.FC<ListProps> = ({ taskList, loading, size }) => {
   };
 
   return (
+    
+<>
+    {taskList.length === 0 && !loading ? (
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <p>해당 업무가 없습니다.</p>
+      </div>
+  ) : (
     <Table
-      dataSource={loading ? Array(size).fill({}) : taskList}
-      columns={columns}
-      pagination={false}
-      rowKey="taskId"
-      bordered={false}
-      className="custom-table"
-      locale={{ emptyText: loading ? <Skeleton active /> : '등록된 업무가 없습니다.' }}
-      onRow={(record) => ({
-        onClick: () => handleRowClick(record),
-      })}
-      scroll={{ x: '100%' }} // 테이블 가로 스크롤 활성화
-    />
+    dataSource={loading ? Array(size).fill({}) : taskList}
+    columns={columns}
+    pagination={false}
+    rowKey="taskId"
+    bordered={false}
+    className="custom-table"
+    locale={{ emptyText: loading ? <Skeleton active /> : '등록된 업무가 없습니다.' }}
+    onRow={(record) => ({
+      onClick: () => handleRowClick(record),
+    })}
+    scroll={{ x: '100%' }} // 테이블 가로 스크롤 활성화
+  />
+  )}
+  </>
   );
 };
 

@@ -42,6 +42,7 @@ type SideBarProps = {
 
 const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   return (
     <Sider
       width={220}
@@ -67,7 +68,9 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
                 justifyContent: 'center',
                 overflow: 'hidden',
                 flexDirection: 'column',
+                cursor: 'pointer', // 커서 변경
               }}
+              onClick={() => navigate('/')} // 로고 클릭 시 이동
             >
               <img
                 src={collapsed ? logo : llogo}

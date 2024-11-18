@@ -98,11 +98,19 @@ const TaskList: React.FC = () => {
         page - 1,
         size
       ); // MUI 페이지는 1부터 시작, API는 0부터
-      const sortedTasks = sortTasksByDueDate(result.content); // 정렬된 데이터
-      setTaskList(sortedTasks);
-      setTotalPages(result.totalPages);
+      if (!result || !result.content || result.content.length === 0) {
+        // 204 No Content 혹은 데이터가 없을 경우 처리
+        setTaskList([]); // 빈 배열 할당
+        setTotalPages(0); // 총 페이지를 0으로 설정
+    } else {
+        const sortedTasks = sortTasksByDueDate(result.content); // 마감일 기준 정렬된 데이터
+        setTaskList(sortedTasks);
+        setTotalPages(result.totalPages || 0); // 총 페이지 정보 설정
+    }
     } catch (error) {
       console.error('Failed to search tasks:', error);
+        setTaskList([]); // 오류 시에도 빈 배열로 초기화
+        setTotalPages(0);
     } finally {
       setLoading(false);
     }
@@ -152,6 +160,10 @@ const TaskList: React.FC = () => {
       {/* 테이블 */}
       <List taskList={taskList} loading={loading} size={10} />
 
+      {taskList.length === 0 && !loading ? (
+      <>
+      </>
+  ) : (
     <div style={{display:'flex', width:'100%', justifyContent:'center'}}>
         <Pagination
           count={totalPages} // 총 페이지 수
@@ -169,6 +181,8 @@ const TaskList: React.FC = () => {
           
         />
       </div>
+  )}
+    
     </div>
   );
 };

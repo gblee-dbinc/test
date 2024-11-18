@@ -131,8 +131,13 @@ const Login: React.FC = () => {
             } else {
                 sessionStorage.setItem('userInfo', JSON.stringify(response.data.userInfo));
                 toast.success(`${response.data.userInfo.name}님 안녕하세요!`);
-                const from = location.state?.from?.pathname || '/';
-                navigate(from, { replace: true });
+                
+                
+                // 저장된 리다이렉트 URL 가져오기
+                const redirectUrl = sessionStorage.getItem('redirectUrl') || '/';
+                sessionStorage.removeItem('redirectUrl'); // 사용 후 제거
+
+                navigate(redirectUrl); // 저장된 URL로 이동
             }
         } catch (error) {
             console.error('Unhandled Error:', error);

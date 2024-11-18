@@ -59,7 +59,6 @@ const Search: React.FC<SearchProps> = ({ onSearch }) => {
         const fetchUsers = async () => {
           try {
             const userListData = await getUserByProjectId(projectIds);
-            
             setUserList(userListData || []);
           } catch (error) {
             console.error("Error fetching users:", error);
