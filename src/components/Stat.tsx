@@ -100,39 +100,77 @@ const Stat: React.FC = () => {
   };
 
   // 반응형 스타일
-  const containerStyle: React.CSSProperties = screens.lg
-    ? {
-        width: '260px',
-        backgroundColor: '#F8F7F1',
-        height: '100vh',
-        position: 'sticky',
-        top: 0,
-        flexShrink: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '16px',
-        boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
-      }
-    : {
-        width: '100%',
-        backgroundColor: '#F8F7F1',
-        padding: '16px',
-        marginBottom: '16px',
-        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-      };
+  const containerStyle: React.CSSProperties = screens.xl
+  ? {
+      width: '250px',
+      backgroundColor: '#F8F7F1',
+      height: '100vh',
+      position: 'sticky',
+      top: 0,
+      flexShrink: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '16px',
+      boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
+    }
+  : screens.md
+  ? {
+      width: '200px', // 중간 화면에서 줄어든 너비
+      backgroundColor: '#F8F7F1',
+      padding: '16px 8px',
+      marginBottom: '16px',
+      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+      height: '100vh',
+    }
+  : {
+      width: '100%',
+      backgroundColor: '#F8F7F1',
+      padding: '16px 8px',
+      marginBottom: '16px',
+      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+      height: '100vh',
+    };
 
-      const cardStyle: React.CSSProperties = screens.lg
-    ? {
-        marginTop: '40px'
-      }
-    : {
-        width: '100%',
-        display:'flex',
-        flexDirection: 'column'
-        
-      };
-
+const cardStyle: React.CSSProperties = screens.xl
+  ? {
+      marginTop: '40px',
       
+    }
+  : screens.md
+  ? {
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      marginTop: '20px',
+    }
+  : {
+      width: '100%',
+      marginTop: '20px',
+      
+      
+    };
+
+const doughnutContainerStyle: React.CSSProperties = screens.xl
+  ? {
+      width: '100%',
+      height: '200px',
+      position: 'relative',
+      marginBottom: '30px',
+    }
+  : screens.md
+  ? {
+      width: '100%',
+      height: '150px', // 중간 화면에서 Doughnut 크기 줄이기
+      position: 'relative',
+      marginBottom: '20px',
+    }
+  : {
+      width: '100%',
+      height: '120px', // 작은 화면에서 Doughnut 크기 더 줄이기
+      position: 'relative',
+      marginBottom: '15px',
+    };
+
 
   return (
     <div style={containerStyle}>
@@ -199,29 +237,23 @@ const Stat: React.FC = () => {
   </p>
 
   {/* 화살표 또는 -: 가운데 정렬 */}
+  {screens.xl && typeof increaseValue === 'number' && (
   <p
     style={{
       margin: 0,
       textAlign: 'center',
-      width: '20px', // 고정된 너비로 화살표 정렬
-      color: // 조건에 따라 색상 변경
-        typeof increaseValue === 'number'
-          ? increaseValue > 0
-            ? '#DB4A26' // 증가 시 빨간색
-            : increaseValue < 0
-            ? '#0887C9' // 감소 시 파란색
-            : '#000' // 동일할 경우 검정색
-          : '#000',
+      width: '20px',
+      color:
+        increaseValue > 0
+          ? '#DB4A26' // 증가 시 빨간색
+          : increaseValue < 0
+          ? '#0887C9' // 감소 시 파란색
+          : '#000', // 동일할 경우 검정색
     }}
   >
-    {typeof increaseValue === 'number'
-      ? increaseValue > 0
-        ? '↑'
-        : increaseValue < 0
-        ? '↓'
-        : '-'
-      : '-'}
+    {increaseValue > 0 ? '↑' : increaseValue < 0 ? '↓' : '-'}
   </p>
+)}
 </div>
 
         </li>

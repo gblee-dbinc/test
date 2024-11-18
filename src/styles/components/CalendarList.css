@@ -10,11 +10,28 @@
     flex-direction: column;
   }
 
+
+
+  .fc-daygrid {
+    width: 100%; /* 날짜 셀 너비를 가득 채움 */
+  }
+  
+  .fc .fc-day {
+    min-width: 100px; /* 날짜 셀의 최소 너비 */
+    flex-grow: 1;
+  }
+
+  
   .fc {
     width: 100%; /* 전체 너비를 부모 컨테이너에 맞춤 */
-    height: 100%; /* 전체 높이를 부모 컨테이너에 맞춤 */
+    height: auto; /* 전체 높이를 부모 컨테이너에 맞춤 */
     box-sizing: border-box; /* 테두리와 패딩을 포함한 크기 계산 */
     --fc-border-color: none;
+  }
+
+  .fc-header-toolbar{
+    margin-left:0 !important;
+    margin-right:0 !important;
   }
 
   .today-cell {

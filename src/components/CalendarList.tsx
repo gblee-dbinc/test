@@ -142,7 +142,7 @@ interface Task {
           return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <Avatar src={assigneeProfile} size="small" />
-              <Text>{assigneeName}</Text>
+              <Text style={{whiteSpace:'nowrap'}}>{assigneeName}</Text>
             </div>
           );
         }
@@ -152,7 +152,7 @@ interface Task {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
             <Avatar.Group
               maxCount={2}
-              maxStyle={{ color: '#f56a00', backgroundColor: '#fde3cf' }}
+              size="small"
             >
               {assignees.map((assignee, index) => (
                 <Tooltip key={index} title={assignee.assigneeName} placement="top">
@@ -161,12 +161,12 @@ interface Task {
               ))}
             </Avatar.Group>
             <div style={{ display: 'flex', alignItems: 'center', flexDirection:'column' }}>
-            <Text>
+            {/* <Text>
               {assignees[0]?.assigneeName} 외 
               </Text>
               <Text>
               {assignees.length - 1}명
-            </Text>
+            </Text> */}
             </div>
           </div>
         );
@@ -178,9 +178,9 @@ interface Task {
       key: 'status',
       align: 'center' as 'center',
       render: (status: number) => (
-      <div>
-        {StatusTag(status)}
-    </div>
+        <div>
+            {StatusTag(status,'small')}
+        </div>
       ),
     },
   ];
@@ -279,9 +279,9 @@ const renderDayCellContent = (cellInfo: any) => {
       }}
     >
       <p style={{ cursor: 'pointer', marginBottom: '4px' }}>{cellInfo.dayNumberText}</p> {/* 날짜 표시 */}
-      <div style={{ visibility: eventCount > 0 ? 'visible' : 'hidden', height: '14px' }}>
+      <div style={{ visibility: eventCount > 0 ? 'visible' : 'hidden', whiteSpace:'nowrap'}}>
         {/* 이벤트 개수 표시 또는 공간 유지 */}
-        <Badge key={'pink'} color={'pink'} text={eventCount > 0 ? `+${eventCount}` : ''} />
+        <Badge key={'pink'} color={'pink'} text={eventCount > 1 ? `+${eventCount}` : ''} />
         {/* <span style={{ color: '#000000', fontSize: '0.8em' }}>{eventCount > 0 ? `+${eventCount}` : ''}</span> */}
       </div>
     </div>

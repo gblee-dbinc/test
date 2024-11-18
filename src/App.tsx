@@ -20,7 +20,7 @@ import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 
 // import SideBar from "./components/SideBar";
-import { Button, Layout, Menu } from 'antd';
+import { Button, Layout, Menu, Tooltip } from 'antd';
 import logo from './styles/images/logo.png';
 import llogo from './styles/images/logo_v2.png';
 import './styles/pages/SideBar.css';
@@ -50,7 +50,7 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
       collapsed={collapsed} // 부모에서 전달된 상태 사용
       onCollapse={(collapsed: boolean) => onCollapse(collapsed)} // 상태 업데이트 콜백
       trigger={null}
-      breakpoint="lg"
+      breakpoint="xl"
       style={{
         height: '100vh',
       }}
@@ -156,23 +156,26 @@ const SideBar: React.FC<SideBarProps> = ({ collapsed, onCollapse, onLogout }) =>
       justifyContent: 'center',
     }}
   >
-    <Button
-      size="large"
-      type="text"
-      style={{
-        backgroundColor: '#C0C0C020',
-        color: '#fff',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'center',
-        gap: 8,
-      }}
-      icon={<LogoutOutlined />}
-      onClick={onLogout}
-    >
-      {!collapsed && '로그아웃'}
-    </Button>
+
+<Tooltip title={collapsed ? '로그아웃' : ''} placement="right">
+      <Button
+        size="large"
+        type="text"
+        style={{
+          backgroundColor: '#C0C0C020',
+          color: '#fff',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+        }}
+        icon={<LogoutOutlined />}
+        onClick={onLogout}
+      >
+        {!collapsed && '로그아웃'}
+      </Button>
+    </Tooltip>
   </div>
 </Sider>
   );

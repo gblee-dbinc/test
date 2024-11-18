@@ -94,7 +94,7 @@ const Dashboard = () => {
     <Layout style={{ flex: 1,  overflowY: 'auto' }}>
       <Content
         style={{
-          padding: '20px 100px',
+          padding: '20px 40px',
           backgroundColor: '#fff',
           minHeight: '100vh',
           display: 'flex',
@@ -120,7 +120,7 @@ const Dashboard = () => {
       {/* 상단 업무 리스트 */}
       <Card style={{ flex: 1, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'}}>
         <Title level={4} style={{ margin:0 }}>업무 리스트</Title>
-        <List taskList={taskList} loading={loading}/>
+        <List taskList={taskList} loading={loading} size={5}/>
       </Card>
 
       {/* 하단 캘린더와 업무 리스트 */}

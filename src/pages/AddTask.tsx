@@ -94,6 +94,7 @@ const AddTask: React.FC = () => {
   const [recurring, setRecurring] = useState<boolean>(false);
     const [frequencyType, setFrequencyType] = useState<string>('daily');
     const [hasEndDate, setHasEndDate] = useState(false);
+    const [endDate, setEndDate] = useState<string>();
 //   const [frequencyInterval, setFrequencyInterval] = useState<number>(1);
   const [dailyFrequencyInterval, setDailyFrequencyInterval] = useState<string>('1');
   const [weeklyFrequencyInterval, setWeeklyFrequencyInterval] = useState<string>('1');
@@ -306,8 +307,6 @@ const numberToDay: Record<number, string> = {
 
   {/* 종료일 DatePicker */}
   <Form.Item
-    name="endDate"
-    initialValue={false} // 초기값 설정
     noStyle
     rules={[{ required: true, message: '종료일을 선택하세요.' }]}
     style={{
@@ -323,6 +322,16 @@ const numberToDay: Record<number, string> = {
         opacity: hasEndDate ? 1 : 0, // 보이거나 투명하게
         visibility: hasEndDate ? 'visible' : 'hidden', // 보이거나 숨김
         transition: 'opacity 0.3s ease', // 부드러운 전환
+      }}
+      onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+        if (Array.isArray(dateString)) {
+          console.error('Unexpected array value in dateString:', dateString);
+          return;
+        }
+        if (date) {
+          setEndDate(dateString); // 상태 업데이트
+          console.log('Updated dueDate:', dateString); // 확인용 로그
+        }
       }}
     />
   </Form.Item>
@@ -341,7 +350,6 @@ const numberToDay: Record<number, string> = {
     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
     
       <Form.Item
-        name="weeklyInterval"
         initialValue={1}
         noStyle
         rules={[{ required: true, message: '주 수를 입력하세요.' }]}
@@ -352,6 +360,8 @@ const numberToDay: Record<number, string> = {
           min={1}
           placeholder="1"
           style={{ width: '100px' }}
+          value={weeklyFrequencyInterval}
+          onChange={(e)=>setWeeklyFrequencyInterval(e.target.value)}
         />
       </Form.Item>
       <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>주 마다</label>
@@ -394,65 +404,59 @@ const numberToDay: Record<number, string> = {
 >
   {/* 종료일 라디오 그룹 */}
   <Form.Item
-  name="hasEndDate"
-  initialValue={false} // 초기값 설정
-  style={{
-    flex: 1,
-    marginBottom: 0,
-  }}
->
-  <Radio.Group
-    value={hasEndDate}
-    onChange={(e) => {
-      setHasEndDate(e.target.value); // 상태 업데이트
-      if (!e.target.value) {
-        form.setFieldsValue({ endDate: null }); // hasEndDate가 false일 때 endDate 값 초기화
-      }
-    }}
+    name="hasEndDate"
     style={{
-      display: 'flex',
-      justifyContent: 'space-between',
+      flex: 1,
+      marginBottom: 0,
     }}
   >
-    <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
-      종료일 없음
-    </Radio>
-    <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
-      종료일 있음
-    </Radio>
-  </Radio.Group>
-</Form.Item>
+    <Radio.Group
+      value={hasEndDate}
+      onChange={(e) => setHasEndDate(e.target.value)}
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
+        종료일 없음
+      </Radio>
+      <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
+        종료일 있음
+      </Radio>
+    </Radio.Group>
+  </Form.Item>
 
-{/* 종료일 DatePicker */}
-<Form.Item
-  name="endDate"
-  dependencies={['hasEndDate']} // hasEndDate 상태에 따라 유효성 검사 조건 변경
-  rules={[
-    ({ getFieldValue }) => ({
-      validator(_, value) {
-        if (getFieldValue('hasEndDate') && !value) {
-          return Promise.reject(new Error('종료일을 선택하세요.'));
-        }
-        return Promise.resolve();
-      },
-    }),
-  ]}
-  style={{
-    flex: 1,
-    marginBottom: 0,
-    visibility: hasEndDate ? 'visible' : 'hidden', // 공간 고정
-    opacity: hasEndDate ? 1 : 0,
-    transition: 'opacity 0.3s ease',
-  }}
->
-  <DatePicker
-    size="large"
-    placeholder="종료일 선택"
+  {/* 종료일 DatePicker */}
+  <Form.Item
+    noStyle
+    rules={[{ required: true, message: '종료일을 선택하세요.' }]}
     style={{
-      width: '100%',
+      flex: 1,
+      marginBottom: 0,
     }}
-  />
-</Form.Item>
+  >
+    <DatePicker
+      size="large"
+      placeholder="종료일 선택"
+      style={{
+        width: '100%',
+        opacity: hasEndDate ? 1 : 0, // 보이거나 투명하게
+        visibility: hasEndDate ? 'visible' : 'hidden', // 보이거나 숨김
+        transition: 'opacity 0.3s ease', // 부드러운 전환
+      }}
+      onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+        if (Array.isArray(dateString)) {
+          console.error('Unexpected array value in dateString:', dateString);
+          return;
+        }
+        if (date) {
+          setEndDate(dateString); // 상태 업데이트
+          console.log('Updated dueDate:', dateString); // 확인용 로그
+        }
+      }}
+    />
+  </Form.Item>
 
 </div>
 
@@ -465,7 +469,6 @@ const numberToDay: Record<number, string> = {
     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
     
       <Form.Item
-        name="monthlyInterval"
         initialValue={1}
         noStyle
         rules={[{ required: true, message: '개월 수를 입력하세요.' }]}
@@ -476,6 +479,8 @@ const numberToDay: Record<number, string> = {
           min={1}
           placeholder="1"
           style={{ width: '100px' }}
+          value={monthlyFrequencyInterval}
+          onChange={(e)=>setMonthlyFrequencyInterval(e.target.value)}
         />
       </Form.Item>
       <label style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>개월 마다</label>
@@ -522,63 +527,57 @@ const numberToDay: Record<number, string> = {
   {/* 종료일 라디오 그룹 */}
   <Form.Item
     name="hasEndDate"
-    initialValue={false} // 초기값 설정
     style={{
       flex: 1,
       marginBottom: 0,
     }}
   >
     <Radio.Group
-    value={hasEndDate}
-    onChange={(e) => {
-      setHasEndDate(e.target.value); // 상태 업데이트
-      if (!e.target.value) {
-        form.setFieldsValue({ endDate: null }); // hasEndDate가 false일 때 endDate 값 초기화
-      }
-    }}
+      value={hasEndDate}
+      onChange={(e) => setHasEndDate(e.target.value)}
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
+        종료일 없음
+      </Radio>
+      <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
+        종료일 있음
+      </Radio>
+    </Radio.Group>
+  </Form.Item>
+
+  {/* 종료일 DatePicker */}
+  <Form.Item
+    noStyle
+    rules={[{ required: true, message: '종료일을 선택하세요.' }]}
     style={{
-      display: 'flex',
-      justifyContent: 'space-between',
+      flex: 1,
+      marginBottom: 0,
     }}
   >
-    <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
-      종료일 없음
-    </Radio>
-    <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
-      종료일 있음
-    </Radio>
-  </Radio.Group>
-</Form.Item>
-
-{/* 종료일 DatePicker */}
-<Form.Item
-  name="endDate"
-  dependencies={['hasEndDate']} // hasEndDate 상태에 따라 유효성 검사 조건 변경
-  rules={[
-    ({ getFieldValue }) => ({
-      validator(_, value) {
-        if (getFieldValue('hasEndDate') && !value) {
-          return Promise.reject(new Error('종료일을 선택하세요.'));
+    <DatePicker
+      size="large"
+      placeholder="종료일 선택"
+      onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+        if (Array.isArray(dateString)) {
+          console.error('Unexpected array value in dateString:', dateString);
+          return;
         }
-        return Promise.resolve();
-      },
-    }),
-  ]}
-  style={{
-    flex: 1,
-    marginBottom: 0,
-    visibility: hasEndDate ? 'visible' : 'hidden', // 공간 고정
-    opacity: hasEndDate ? 1 : 0,
-    transition: 'opacity 0.3s ease',
-  }}
->
-  <DatePicker
-    size="large"
-    placeholder="종료일 선택"
-    style={{
-      width: '100%',
-    }}
-  />
+        if (date) {
+          setEndDate(dateString); // 상태 업데이트
+          console.log('Updated dueDate:', dateString); // 확인용 로그
+        }
+      }}
+      style={{
+        width: '100%',
+        opacity: hasEndDate ? 1 : 0, // 보이거나 투명하게
+        visibility: hasEndDate ? 'visible' : 'hidden', // 보이거나 숨김
+        transition: 'opacity 0.3s ease', // 부드러운 전환
+      }}
+    />
   </Form.Item>
 </div>
 
@@ -648,63 +647,57 @@ const numberToDay: Record<number, string> = {
   {/* 종료일 라디오 그룹 */}
   <Form.Item
     name="hasEndDate"
-    initialValue={false} // 초기값 설정
     style={{
       flex: 1,
       marginBottom: 0,
     }}
   >
     <Radio.Group
-    value={hasEndDate}
-    onChange={(e) => {
-      setHasEndDate(e.target.value); // 상태 업데이트
-      if (!e.target.value) {
-        form.setFieldsValue({ endDate: null }); // hasEndDate가 false일 때 endDate 값 초기화
-      }
-    }}
+      value={hasEndDate}
+      onChange={(e) => setHasEndDate(e.target.value)}
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
+        종료일 없음
+      </Radio>
+      <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
+        종료일 있음
+      </Radio>
+    </Radio.Group>
+  </Form.Item>
+
+  {/* 종료일 DatePicker */}
+  <Form.Item
+    noStyle
+    rules={[{ required: true, message: '종료일을 선택하세요.' }]}
     style={{
-      display: 'flex',
-      justifyContent: 'space-between',
+      flex: 1,
+      marginBottom: 0,
     }}
   >
-    <Radio value={false} style={{ whiteSpace: 'nowrap' }}>
-      종료일 없음
-    </Radio>
-    <Radio value={true} style={{ whiteSpace: 'nowrap' }}>
-      종료일 있음
-    </Radio>
-  </Radio.Group>
-</Form.Item>
-
-{/* 종료일 DatePicker */}
-<Form.Item
-  name="endDate"
-  dependencies={['hasEndDate']} // hasEndDate 상태에 따라 유효성 검사 조건 변경
-  rules={[
-    ({ getFieldValue }) => ({
-      validator(_, value) {
-        if (getFieldValue('hasEndDate') && !value) {
-          return Promise.reject(new Error('종료일을 선택하세요.'));
+    <DatePicker
+      size="large"
+      placeholder="종료일 선택"
+      onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+        if (Array.isArray(dateString)) {
+          console.error('Unexpected array value in dateString:', dateString);
+          return;
         }
-        return Promise.resolve();
-      },
-    }),
-  ]}
-  style={{
-    flex: 1,
-    marginBottom: 0,
-    visibility: hasEndDate ? 'visible' : 'hidden', // 공간 고정
-    opacity: hasEndDate ? 1 : 0,
-    transition: 'opacity 0.3s ease',
-  }}
->
-  <DatePicker
-    size="large"
-    placeholder="종료일 선택"
-    style={{
-      width: '100%',
-    }}
-  />
+        if (date) {
+          setEndDate(dateString); // 상태 업데이트
+          console.log('Updated dueDate:', dateString); // 확인용 로그
+        }
+      }}
+      style={{
+        width: '100%',
+        opacity: hasEndDate ? 1 : 0, // 보이거나 투명하게
+        visibility: hasEndDate ? 'visible' : 'hidden', // 보이거나 숨김
+        transition: 'opacity 0.3s ease', // 부드러운 전환
+      }}
+    />
   </Form.Item>
 </div>
 
@@ -745,10 +738,10 @@ const numberToDay: Record<number, string> = {
           taskData.frequencyInterval = Number(dailyFrequencyInterval) || 1; // 주기
         }
         else if (values.frequencyType === 'weekly') {
-          taskData.frequencyInterval = Number(values.weeklyInterval) || 1; // 주기
+          taskData.frequencyInterval = Number(weeklyFrequencyInterval) || 1; // 주기
           taskData.weeklyDay = values.weeklyDay || []; // 선택된 요일
         } else if (values.frequencyType === 'monthly') {
-          taskData.frequencyInterval = Number(values.monthlyInterval) || 1;
+          taskData.frequencyInterval = Number(monthlyFrequencyInterval) || 1;
           
           if (monthlyOption === 'dayOfMonth') {
             taskData.monthlyDayOfMonth = dayjs(values.startDate).date();
@@ -840,30 +833,57 @@ const numberToDay: Record<number, string> = {
   required
   style={{ marginBottom: '16px' }}
 >
-  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-    {/* 시작일 */}
+<div
+  style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    justifyContent: 'space-between',
+    marginBottom: '16px',
+  }}
+>
+  {/* 시작일 */}
+  <div
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      flexDirection: 'row',
+      alignContent: 'center',
+      position: 'relative',
+    }}
+  >
     <Form.Item
       name="startDate"
+      className="custom-form-item"
       rules={[{ required: true, message: '시작일을 선택하세요.' }]}
-      style={{ marginBottom: 0 }}
-    >
-      <DatePicker size="large" placeholder="시작일 선택" onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
-        if (Array.isArray(dateString)) {
-          console.error('Unexpected array value in dateString:', dateString);
-          return;
-        }
-        if (date) {
-          setStartDate(dateString); // 상태 업데이트
-          console.log('Updated dueDate:', dateString); // 확인용 로그
-        }
+      style={{
+        marginBottom: 0,
+        flex: 1,
+        position: 'relative', // 에러 메시지 위치 조정
       }}
+    >
+      <DatePicker
+        size="large"
+        placeholder="시작일 선택"
+        style={{ width: '100%' }}
+        onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+          if (Array.isArray(dateString)) {
+            console.error('Unexpected array value in dateString:', dateString);
+            return;
+          }
+          if (date) {
+            setStartDate(dateString); // 상태 업데이트
+            console.log('Updated dueDate:', dateString); // 확인용 로그
+          }
+        }}
       />
     </Form.Item>
     <span>~</span>
     {/* 종료일 */}
     <Form.Item
+      className="custom-form-item"
       name="dueDate"
-  
       rules={[
         { required: true, message: '마감일을 선택하세요.' },
         ({ getFieldValue }) => ({
@@ -881,39 +901,39 @@ const numberToDay: Record<number, string> = {
         }),
       ]}
       style={{
-        marginBottom: 0
+        marginBottom: 0,
+        flex: 1,
+        position: 'relative', // 에러 메시지 위치 조정
       }}
     >
-      <DatePicker size="large" placeholder="마감일 선택"
-      onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
-        if (Array.isArray(dateString)) {
-          console.error('Unexpected array value in dateString:', dateString);
-          return;
-        }
-        if (date) {
-          setDueDate(dateString); // 상태 업데이트
-          console.log('Updated dueDate:', dateString); // 확인용 로그
-        }
-      }}
-      />
-    </Form.Item>
-
-    {/* 반복 여부 */}
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <span>반복 여부:</span>
-      <Form.Item
-      name="recurring"
-      style={{ marginBottom: 0 }}
-      valuePropName="checked"
-    >
-      <Switch
-        onChange={(checked) => {
-          setRecurring(checked); // 상태 업데이트
+      <DatePicker
+        size="large"
+        placeholder="마감일 선택"
+        style={{ width: '100%' }}
+        onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+          if (Array.isArray(dateString)) {
+            console.error('Unexpected array value in dateString:', dateString);
+            return;
+          }
+          if (date) {
+            setDueDate(dateString); // 상태 업데이트
+            console.log('Updated dueDate:', dateString); // 확인용 로그
+          }
         }}
       />
     </Form.Item>
-    </div>
   </div>
+
+  {/* 반복 여부 */}
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <span>반복 여부:</span>
+    <Form.Item name="recurring" style={{ marginBottom: 0 }} valuePropName="checked">
+      <Switch onChange={(checked) => setRecurring(checked)} />
+    </Form.Item>
+  </div>
+</div>
+
+
 </Form.Item>
 
     

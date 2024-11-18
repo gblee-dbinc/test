@@ -1,8 +1,10 @@
-import React from 'react';
-import { Form, Input, Button, Select, Typography, Layout, Card } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Button, Select, Typography, Layout, Card, Image } from 'antd';
 import { Link, useNavigate } from "react-router-dom";
 import { signup } from "../api/auth/signup";
 import { toast } from "react-toastify";
+import { getAllProjects } from "../api/user/getAllProjects";
+import logo from '../styles/images/logo_v2_black.png'; // 로고 이미지 추가
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -10,7 +12,27 @@ const { Option } = Select;
 const SignUp: React.FC = () => {
     
     const navigate = useNavigate();
+    const [projectList, setProjectList] = useState([]);
     
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                const response = await getAllProjects();
+                if (response.status===200 && response.data) {
+                    setProjectList(response.data); // 프로젝트 리스트 상태 업데이트
+                } else {
+                    toast.error("프로젝트 목록을 불러오는 데 실패했습니다.");
+                }
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+                toast.error("프로젝트 목록을 불러오는 중 오류가 발생했습니다.");
+            }
+        };
+    
+        fetchProjects(); // 비동기 함수 호출
+    }, []);
+    
+
     const onFinish = async (values: {
         userId: string;
         name: string;
@@ -54,20 +76,31 @@ const SignUp: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#f4f4f4',
+                background: 'linear-gradient(to bottom, #ffffff, #f0f2f5)',
                 padding: '20px',
             }}
         >
             <Card
                 style={{
                     maxWidth: '600px',
-                    width: '100%', // 화면 크기에 따라 너비 조정
-                    padding: '20px 40px',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                    borderRadius: '10px',
+                    width: '100%',
+                    padding: '30px 40px',
+                    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.1)',
+                    borderRadius: '15px',
+                    backgroundColor: '#ffffff',
                 }}
             >
-                <Title level={3} style={{ textAlign: 'center', marginBottom: '20px' }}>
+                {/* 로고 */}
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                    <Image
+                        src={logo}
+                        preview={false}
+                        alt="logo"
+                        style={{ height: '60px' }}
+                    />
+                </div>
+
+                <Title level={3} style={{ textAlign: 'center', marginTop:'0', marginBottom: '20px', color: '#333' }}>
                     회원가입
                 </Title>
                 <Form
@@ -159,9 +192,11 @@ const SignUp: React.FC = () => {
                         style={{ marginBottom: '16px' }}
                     >
                         <Select size="large" placeholder="프로젝트를 선택해주세요">
-                            <Option value="project1">프로젝트 1</Option>
-                            <Option value="project2">프로젝트 2</Option>
-                            <Option value="project3">프로젝트 3</Option>
+                        {projectList.map((project: any) => (
+            <Option key={project.projectId} value={project.projectId}>
+                {project.name}
+            </Option>
+        ))}
                         </Select>
                     </Form.Item>
 
@@ -203,7 +238,7 @@ const SignUp: React.FC = () => {
 
                     {/* 제출 버튼 */}
                     <Form.Item style={{ textAlign: 'center', marginTop: '20px' }}>
-                        <Button size="large" type="primary" htmlType="submit" style={{ width: '100%' }}>
+                        <Button size="large" type="primary" htmlType="submit" style={{ width: '100%',borderRadius: '10px' }}>
                             회원가입
                         </Button>
                         <div style={{ marginTop: '10px' }}>

@@ -23,7 +23,13 @@ const Settings = () => {
   const [editing, setEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  
+  const unitCodeToName: Record<string, string> = {
+    OS: "OS",
+    MW: "미들웨어",
+    DB: "DB",
+    NET: "네트워크",
+    SEC: "보안",
+  };
 
   const [userInfo, setUserInfo] = useState(sessionStorage.getItem("userInfo")
   ? JSON.parse(sessionStorage.getItem("userInfo") as string)
@@ -81,7 +87,7 @@ const handleFinish = async (values: any) => {
     console.log(newUserInfo)
 
       sessionStorage.setItem("userInfo", JSON.stringify(newUserInfo));
-      setUserInfo(JSON.stringify(newUserInfo));
+      setUserInfo(newUserInfo);
       toast.success("회원정보가 수정되었습니다.");
       setEditing(false); // Exit editing mode
     } else {
@@ -245,7 +251,7 @@ const handleFinish = async (values: any) => {
             </div>
             <div>
               <Text strong style={{fontSize:'18px', marginRight:'10px'}}>파트:</Text> 
-              <Text style={{fontSize:'16px'}}>{userInfo.unit}</Text>
+              <Text style={{fontSize:'16px'}}>{unitCodeToName[userInfo.unit]}</Text>
             </div>
             <div>
               <Text strong style={{fontSize:'18px', marginRight:'10px'}}>전화번호:</Text> 

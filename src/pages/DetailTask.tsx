@@ -51,7 +51,7 @@ interface Task {
     status: 0 | 1 | 2 | 3; // 진행 상태는 0~3으로 제한
     itoProcessId: string;
     assigneeConfirmation: string;
-    isRecurring: boolean;
+    recurring: boolean;
   }
   
   
@@ -232,7 +232,8 @@ const DetailTask: React.FC = () => {
             <Title level={2} style={{ fontWeight:'bold', margin:0}}>
                 {task.taskName}
             </Title>
-            {task.isRecurring && (
+            {task.recurring && (
+                <Tooltip title="반복업무" placement="right">
                 <SyncOutlined
                 style={{
                 fontSize: '20px',
@@ -240,6 +241,7 @@ const DetailTask: React.FC = () => {
                 marginLeft: '8px',
                 verticalAlign: 'middle', // 아이콘 수직 중앙 정렬
                 }}/>
+                </Tooltip>
             )}
         </Space>
 

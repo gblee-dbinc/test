@@ -6,6 +6,7 @@ import Search from '../components/Search';
 import List from '../components/List';
 import { getAllTask } from "../api/task/getAllTask";
 import { searchTask } from "../api/task/searchTask";
+import { Pagination } from "@mui/material";
 
 const { Title } = Typography;
 
@@ -42,71 +43,11 @@ interface Task {
   assigneeConfirmation: string;
 }
 
+
 const TaskList: React.FC = () => {
-  const [filteredData, setFilteredData] = useState();
-
-  // 테이블 컬럼 정의
-  const columns = [
-    {
-      title: 'No',
-      dataIndex: 'id',
-      key: 'id',
-      align: 'center',
-    },
-    {
-      title: '업무명',
-      dataIndex: 'title',
-      key: 'title',
-      align: 'center',
-      render: (text: string) => (
-        <div
-          style={{
-            display: 'inline-block',
-            backgroundColor: '#f0f0f0',
-            borderRadius: '8px',
-            padding: '4px 8px',
-          }}
-        >
-          {text}
-        </div>
-      ),
-    },
-    {
-      title: '담당자',
-      dataIndex: 'assignee',
-      key: 'assignee',
-      align: 'center',
-    },
-    {
-      title: 'ITO 프로세스',
-      dataIndex: 'process',
-      key: 'process',
-      align: 'center',
-    },
-    {
-      title: '파트',
-      dataIndex: 'part',
-      key: 'part',
-      align: 'center',
-    },
-    {
-      title: '시작일',
-      dataIndex: 'startDate',
-      key: 'startDate',
-      align: 'center',
-    },
-    {
-      title: '마감일',
-      dataIndex: 'dueDate',
-      key: 'dueDate',
-      align: 'center',
-    },
-  ];
-
-
   const [taskList, setTaskList] = useState<Task[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<number>(0);
+  const [page, setPage] = useState<number>(1); // MUI Pagination은 1부터 시작
   const [totalPages, setTotalPages] = useState<number>(0);
   const [size, setSize] = useState<number>(10);
   const [filters, setFilters] = useState<{
@@ -119,20 +60,31 @@ const TaskList: React.FC = () => {
     taskName?: string;
   }>({});
 
-  const userInfo = sessionStorage.getItem("userInfo")
-    ? JSON.parse(sessionStorage.getItem("userInfo") as string)
+  const userInfo = sessionStorage.getItem('userInfo')
+    ? JSON.parse(sessionStorage.getItem('userInfo') as string)
     : null;
+
+    const sortTasksByDueDate = (tasks: Task[]) => {
+      return tasks.sort((a, b) => {
+        const dateA = new Date(a.dueDate).getTime();
+        const dateB = new Date(b.dueDate).getTime();
+        return dateA - dateB; // 마감일 기준 오름차순 정렬
+      });
+    };
 
   const fetchTasks = async (page: number, size: number) => {
     if (!userInfo || !userInfo.projectId) return;
 
     setLoading(true);
     try {
-      const response = await getAllTask(userInfo.projectId, page, size);
-      setTaskList(response.content);
+      const response = await getAllTask(userInfo.projectId, page - 1, size); // MUI 페이지는 1부터 시작, API는 0부터
+
+      console.log(response)
+      const sortedTasks = sortTasksByDueDate(response.content); // 정렬된 데이터
+      setTaskList(sortedTasks);
       setTotalPages(response.totalPages);
     } catch (error) {
-      console.error("Failed to fetch tasks:", error);
+      console.error('Failed to fetch tasks:', error);
     } finally {
       setLoading(false);
     }
@@ -141,11 +93,16 @@ const TaskList: React.FC = () => {
   const fetchFilteredTasks = async () => {
     setLoading(true);
     try {
-      const result = await searchTask({ ...filters, projectIds: userInfo.projectId }, page, size);
-      setTaskList(result.content);
+      const result = await searchTask(
+        { ...filters, projectIds: userInfo.projectId },
+        page - 1,
+        size
+      ); // MUI 페이지는 1부터 시작, API는 0부터
+      const sortedTasks = sortTasksByDueDate(result.content); // 정렬된 데이터
+      setTaskList(sortedTasks);
       setTotalPages(result.totalPages);
     } catch (error) {
-      console.error("Failed to search tasks:", error);
+      console.error('Failed to search tasks:', error);
     } finally {
       setLoading(false);
     }
@@ -169,30 +126,49 @@ const TaskList: React.FC = () => {
     taskName?: string;
   }) => {
     setFilters(newFilters);
-    setPage(0); // 검색 조건이 변경되면 페이지를 첫 페이지로 초기화
+    setPage(1); // 검색 조건이 변경되면 페이지를 첫 페이지로 초기화
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+  const handlePageChange = (event: React.ChangeEvent<unknown>, newPage: number) => {
+    setPage(newPage); // 페이지 상태 업데이트
   };
-
 
   return (
     <div
-    style={{
-      padding: '40px 100px',
-      backgroundColor: '#fff',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '20px',
-    }}
+      style={{
+        padding: '40px 100px',
+        backgroundColor: '#fff',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px',
+      }}
     >
-      <Title level={3} style={{margin:0}}>업무 조회</Title>
+      <Title level={3} style={{ margin: 0 }}>
+        업무 조회
+      </Title>
 
       <Search onSearch={handleSearch} />
       {/* 테이블 */}
-      <List taskList={taskList} loading={loading} />
+      <List taskList={taskList} loading={loading} size={10} />
+
+    <div style={{display:'flex', width:'100%', justifyContent:'center'}}>
+        <Pagination
+          count={totalPages} // 총 페이지 수
+          page={page} // 현재 페이지
+          sx={{
+            '& .MuiPaginationItem-root': {
+              '&.Mui-selected': {
+                backgroundColor: '#006AFF', // 선택된 페이지의 배경색
+                color: '#fff', // 선택된 페이지의 텍스트 색상
+              },
+            },
+          }}
+        
+          onChange={handlePageChange} // 페이지 변경 핸들러
+          
+        />
+      </div>
     </div>
   );
 };
