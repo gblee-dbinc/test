@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Form, Input, Button, Avatar, Upload, message, Typography, Space, Divider, Tag, Select } from 'antd';
 import TuneIcon from '@mui/icons-material/Tune';
 import { UserOutlined, UploadOutlined, EditOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd';
 import { Option } from 'antd/es/mentions';
 import { toast } from "react-toastify";
+import { getProjectsByProjectId } from '../api/user/getProjectsByProjectId';
+import { updateUserInfo } from '../api/user/updateUserInfo';
 
 const { Title, Text } = Typography;
+
+interface Project {
+  
+  projectId: string;
+  name: string;
+  description: string;
+
+}
 
 const Settings = () => {
   const [form] = Form.useForm<FormInstance>(); // 명시적 타입 설정
@@ -18,13 +28,70 @@ const Settings = () => {
   const [userInfo, setUserInfo] = useState(sessionStorage.getItem("userInfo")
   ? JSON.parse(sessionStorage.getItem("userInfo") as string)
   : null);
+  const [projectList, setProjectList] = useState<Project[]>([]); 
 
-  const handleFinish = (values: any) => {
-    setUserInfo(values);
-    setEditing(false);
-    // message.success('회원정보가 수정되었습니다.');
-    toast.success('회원정보가 수정되었습니다. ')
-  };
+  useEffect(() => {
+    
+
+
+     if (userInfo && userInfo.projectId) {
+         //setProjectList(userInfo.projectId);
+         
+         
+         const fetchProjectList = async () => {
+           try {
+               const resProjectList = await getProjectsByProjectId(userInfo.projectId);
+               setProjectList(resProjectList);
+           } catch (error) {
+               console.error("Error fetching users:", error);
+           }
+       };
+       fetchProjectList();
+     }
+
+},[userInfo]);
+
+
+
+const handleFinish = async (values: any) => {
+  try {
+    // Combine form values and current user info
+    const updatedUserInfo = {
+      
+      ...values, // Merge updated fields
+      
+    };
+
+    console.log(values)
+    // Call the API to update user information
+   const response = await updateUserInfo(userInfo.userId, values); // Replace `updateUserInfo` with your actual API function
+
+    if (response.code === 200) {
+
+      const newUserInfo={
+        userId: response.data.userId,
+        name: response.data.name,
+        email: response.data.email,
+        phoneNumber: response.data.phoneNumber,
+        photo: response.data.photo,
+        position: response.data.position,
+        unit: response.data.unit,
+        projectId: response.data.projectId,
+    }
+    console.log(newUserInfo)
+
+      sessionStorage.setItem("userInfo", JSON.stringify(newUserInfo));
+      setUserInfo(JSON.stringify(newUserInfo));
+      toast.success("회원정보가 수정되었습니다.");
+      setEditing(false); // Exit editing mode
+    } else {
+      toast.error(response.message || "회원정보 수정에 실패했습니다.");
+    }
+  } catch (error) {
+    console.error("Error updating user information:", error);
+    toast.error("서버와 통신 중 오류가 발생했습니다.");
+  }
+};
 
   const handleUpload = (info: any) => {
     if (info.file.status === 'done') {
@@ -99,15 +166,23 @@ const Settings = () => {
             >
               <Input size="large"/>
             </Form.Item>
-            <Form.Item label="프로젝트" name="projectId" rules={[{ required: true }]}>
-              <Select
-                mode="multiple"
-                size="large"
-                defaultValue={userInfo}
-                style={{ width: '100%' }}
-                disabled
-              />
-            </Form.Item>
+            
+
+  <Form.Item
+    label="프로젝트"
+    name="projectId"
+    rules={[{ required: true, message: '프로젝트를 선택하세요.' }]}
+  >
+    <Select   size="large" mode="multiple" style={{ width: '100%' }} disabled>
+      {projectList.map((project: any) => (
+        <Select.Option key={project.projectId} value={project.projectId}>
+          {project.name}
+        </Select.Option>
+      ))}
+    </Select>
+  </Form.Item>
+
+
             <Form.Item label="파트" name="unit" rules={[{ required: true }]}>
               <Select size="large" style={{ flex: 1, minWidth: '150px' }} allowClear>
                 <Option value="OS">OS</Option>
@@ -152,7 +227,13 @@ const Settings = () => {
             </div>
             <div>
               <Text strong style={{ fontSize: '18px', marginRight: '10px' }}>프로젝트:</Text>{' '}
-              {userInfo.projectId.map((item:string,index:number) => (
+              {projectList.map((project: any,index:number) => (
+              <Tag key={project.projectId} color={tagColors[index % tagColors.length]} // 색상을 순환적으로 할당
+              style={{ marginBottom: '5px' }}>
+                <span style={{ fontSize: '16px' }}>{project.name}</span>
+              </Tag>
+            ))}
+              {/* {userInfo.projectId.map((item:string,index:number) => (
                 <Tag 
                   key={index} 
                   color={tagColors[index % tagColors.length]} // 색상을 순환적으로 할당
@@ -160,7 +241,7 @@ const Settings = () => {
                 >
                   <span style={{ fontSize: '16px' }}>{item}</span>
                 </Tag>
-              ))}
+              ))} */}
             </div>
             <div>
               <Text strong style={{fontSize:'18px', marginRight:'10px'}}>파트:</Text> 

@@ -91,13 +91,13 @@ const AddTask: React.FC = () => {
   
   
 
-  const [isRecurring, setIsRecurring] = useState<boolean>(false);
+  const [recurring, setRecurring] = useState<boolean>(false);
     const [frequencyType, setFrequencyType] = useState<string>('daily');
     const [hasEndDate, setHasEndDate] = useState(false);
 //   const [frequencyInterval, setFrequencyInterval] = useState<number>(1);
-//   const [dailyFrequencyInterval, setDailyFrequencyInterval] = useState<string>('1');
-//   const [weeklyFrequencyInterval, setWeeklyFrequencyInterval] = useState<string>('1');
-//   const [monthlyFrequencyInterval, setMonthlyFrequencyInterval] = useState<string>('1');
+  const [dailyFrequencyInterval, setDailyFrequencyInterval] = useState<string>('1');
+  const [weeklyFrequencyInterval, setWeeklyFrequencyInterval] = useState<string>('1');
+  const [monthlyFrequencyInterval, setMonthlyFrequencyInterval] = useState<string>('1');
  
 const [monthlyOption, setMonthlyOption] = useState<string>('dayOfMonth');
   const [monthlyDayOfMonth, setMonthlyDayOfMonth] = useState<number | null>(null); //옵션1)몇일
@@ -251,7 +251,7 @@ const numberToDay: Record<number, string> = {
   <Form.Item style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
       <Form.Item
-        name="dailyInterval"
+        
         initialValue={1}
         noStyle
         rules={[{ required: true, message: '일 수를 입력하세요.' }]}
@@ -261,6 +261,8 @@ const numberToDay: Record<number, string> = {
           type="number"
           min={1}
           placeholder="1"
+          value={dailyFrequencyInterval}
+          onChange={(e)=>setDailyFrequencyInterval(e.target.value)}
           style={{ width: '100px' }}
         />
       </Form.Item>
@@ -731,26 +733,29 @@ const numberToDay: Record<number, string> = {
       };
   
       // 반복 여부 처리
-      if (values.isRecurring) {
+      if (values.recurring) {
         taskData = {
           ...taskData,
-          isRecurring: true,
+          recurring: true,
           frequencyType: values.frequencyType || 'daily', // 기본값: daily
-          frequencyInterval: values.dailyInterval || 1, // 기본값: dailyInterval
+          //frequencyInterval: Number(values.dailyInterval) || 1, // 기본값: dailyInterval
         };
   
-        if (values.frequencyType === 'weekly') {
-          taskData.frequencyInterval = values.weeklyInterval || 1; // 주기
+        if (values.frequencyType === 'daily') {
+          taskData.frequencyInterval = Number(dailyFrequencyInterval) || 1; // 주기
+        }
+        else if (values.frequencyType === 'weekly') {
+          taskData.frequencyInterval = Number(values.weeklyInterval) || 1; // 주기
           taskData.weeklyDay = values.weeklyDay || []; // 선택된 요일
         } else if (values.frequencyType === 'monthly') {
-          taskData.frequencyInterval = values.monthlyInterval || 1;
+          taskData.frequencyInterval = Number(values.monthlyInterval) || 1;
           
           if (monthlyOption === 'dayOfMonth') {
-            taskData.monthlyDayOfMonth = dayjs(startDate).date();
+            taskData.monthlyDayOfMonth = dayjs(values.startDate).date();
             //taskData.yearlyDayOfMonth = dayjs(values.startDate).date();
           } else if (monthlyOption === 'weekOfMonth') {
-            taskData.monthlyWeekOfMonth = getWeekOfMonthForSpecificDay(dayjs(startDate))
-            taskData.monthlyDayOfWeek = getDayOfWeek(dayjs(startDate))
+            taskData.monthlyWeekOfMonth = getWeekOfMonthForSpecificDay(dayjs(values.startDate))
+            taskData.monthlyDayOfWeek = dayMappingKoToEn[getDayOfWeek(dayjs(values.startDate))]
           }
         
         } else if (values.frequencyType === 'yearly') {
@@ -760,11 +765,11 @@ const numberToDay: Record<number, string> = {
           } else if (yearlyOption === 'yearlyWeekOfMonth') {
             taskData.yearlyMonth = dayjs(values.startDate).month() + 1;
             taskData.yearlyWeekOfMonth = getWeekOfMonthForSpecificDay(dayjs(values.startDate));
-            taskData.yearlyDayOfWeek = getDayOfWeek(dayjs(values.startDate));
+            taskData.yearlyDayOfWeek = dayMappingKoToEn[getDayOfWeek(dayjs(values.startDate))];
           }
         }
       } else {
-        taskData.isRecurring = false;
+        taskData.recurring = false;
       }
   
       // 종료일 처리
@@ -786,7 +791,7 @@ const numberToDay: Record<number, string> = {
 
       } else {
           // 실패 시 에러 메시지 표시
-          //toast.error(.message || '업무 등록에 실패했습니다.');
+          toast.error(response.message || '업무 등록에 실패했습니다.');
       }
     } catch (error) {
       toast.error('서버와 통신 중 오류가 발생했습니다.');
@@ -842,15 +847,39 @@ const numberToDay: Record<number, string> = {
       rules={[{ required: true, message: '시작일을 선택하세요.' }]}
       style={{ marginBottom: 0 }}
     >
-      <DatePicker size="large" placeholder="시작일 선택" 
-          />
+      <DatePicker size="large" placeholder="시작일 선택" onChange={(date: dayjs.Dayjs | null, dateString: string | string[]) => {
+        if (Array.isArray(dateString)) {
+          console.error('Unexpected array value in dateString:', dateString);
+          return;
+        }
+        if (date) {
+          setStartDate(dateString); // 상태 업데이트
+          console.log('Updated dueDate:', dateString); // 확인용 로그
+        }
+      }}
+      />
     </Form.Item>
     <span>~</span>
     {/* 종료일 */}
     <Form.Item
       name="dueDate"
-      rules={[{ required: true, message: '마감일을 선택하세요.' }]}
-      
+  
+      rules={[
+        { required: true, message: '마감일을 선택하세요.' },
+        ({ getFieldValue }) => ({
+          validator(_, value) {
+            if (!value || !getFieldValue('startDate')) {
+              return Promise.resolve();
+            }
+            if (value.isBefore(getFieldValue('startDate'))) {
+              return Promise.reject(
+                new Error('종료일은 시작일 이후여야 합니다.')
+              );
+            }
+            return Promise.resolve();
+          },
+        }),
+      ]}
       style={{
         marginBottom: 0
       }}
@@ -873,13 +902,13 @@ const numberToDay: Record<number, string> = {
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <span>반복 여부:</span>
       <Form.Item
-      name="isRecurring"
+      name="recurring"
       style={{ marginBottom: 0 }}
       valuePropName="checked"
     >
       <Switch
         onChange={(checked) => {
-          setIsRecurring(checked); // 상태 업데이트
+          setRecurring(checked); // 상태 업데이트
         }}
       />
     </Form.Item>
@@ -891,7 +920,7 @@ const numberToDay: Record<number, string> = {
 
 
     {/* 반복 설정 */}
-    {isRecurring && (
+    {recurring && (
       <div style={{ 
         width: '100%', 
         display: 'flex', 

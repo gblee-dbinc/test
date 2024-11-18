@@ -89,7 +89,7 @@ const List: React.FC<ListProps> = ({ taskList, loading }) => {
             >
               {assignees.map((assignee, index) => (
                 <Tooltip key={index} title={assignee.assigneeName} placement="top">
-                  <Avatar src={assignee.assigneeProfile}/>
+                  <Avatar src={assignee.assigneeProfile} size="small"/>
                 </Tooltip>
               ))}
             </Avatar.Group>

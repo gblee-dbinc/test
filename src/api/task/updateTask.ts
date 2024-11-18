@@ -4,17 +4,14 @@ interface updateTaskData {
     projectId: string;
     taskName: string;
     description: string;
-    assigneeId: string;
+    assigneeIds: string[];
     createdDate: string;
     startDate: string;
     dueDate: string;
-    frequencyId: number|null;
-    status: number;
     itoProcessId: string;
-    assigneeConfirmation: string; //Y/N
 }
 
-export const updateTask = async (taskId: string,taskData: updateTaskData) => {
+export const updateTask = async (taskId: string,taskData: Record<string, any>) => {
     try {
         const response = await apiClient.put(`/tasks/${taskId}`, taskData);
         console.log(response.data);

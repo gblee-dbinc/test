@@ -61,7 +61,7 @@ export const addTask = async (taskData: Record<string, any>) => {
             assigneeConfirmation: "N"
         };
 
-        const response = await apiClient.post(`/tasks/addTaskMultiple`, fullTaskData);
+        const response = await apiClient.post(`/tasks/addtask`, fullTaskData);
         console.log(response.data);
         return response.data;
     } catch (error) {

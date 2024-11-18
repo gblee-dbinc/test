@@ -108,12 +108,7 @@ interface Task {
   const [currentMonth, setCurrentMonth] = useState('');
 
   const columns = [
-    {
-        title: 'No.',
-        key: 'index',
-        align: 'center' as 'center',
-        render: (_: any, __: any, index: number) => <Text>{index + 1}</Text>,
-    },
+
     {
       title: '업무명',
       dataIndex: 'taskName',
@@ -128,6 +123,7 @@ interface Task {
             padding: '4px 8px',
             textAlign: 'center',
             display: 'inline-block',
+            whiteSpace:'nowrap'
           }}
         >
           {text}
@@ -136,8 +132,8 @@ interface Task {
     },
     {
       title: '담당자',
-      dataIndex: 'assignee',
-      key: 'assignee',
+      dataIndex: 'assignees',
+      key: 'assignees',
       align: 'center' as 'center',
       render: (assignees: Assignee[]) => {
         if (assignees.length === 1) {
@@ -160,13 +156,18 @@ interface Task {
             >
               {assignees.map((assignee, index) => (
                 <Tooltip key={index} title={assignee.assigneeName} placement="top">
-                  <Avatar src={assignee.assigneeProfile} />
+                  <Avatar src={assignee.assigneeProfile} size="small"/>
                 </Tooltip>
               ))}
             </Avatar.Group>
+            <div style={{ display: 'flex', alignItems: 'center', flexDirection:'column' }}>
             <Text>
-              {assignees[0]?.assigneeName} 외 {assignees.length - 1}명
+              {assignees[0]?.assigneeName} 외 
+              </Text>
+              <Text>
+              {assignees.length - 1}명
             </Text>
+            </div>
           </div>
         );
       },

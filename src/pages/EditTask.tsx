@@ -7,6 +7,8 @@ import styles from '../styles/pages/AddTask.module.css';
 import { getUserByProjectId } from '../api/user/getUserByProjectId';
 import { getProjectsByProjectId } from '../api/user/getProjectsByProjectId';
 import Title from "antd/es/typography/Title";
+import { updateTask } from '../api/task/updateTask';
+import { toast } from 'react-toastify';
 
 
 const { Option } = Select;  // Option을 여기서 가져옵니다.
@@ -17,10 +19,12 @@ interface Assignee {
   assigneeProfile: string;
 }
 interface Task {
+  taskId: string;
   taskName: string;
   status: number;
   startDate: string;
   dueDate: string;
+  projectId: string;
   itoProcessId: string;
   description: string;
   isRecurring: boolean;
@@ -29,10 +33,11 @@ interface Task {
 
 interface FormFields {
   taskName: string;
-  processId: string;
+  itoProcessId: string;
+  projectId: string;
   startDate: dayjs.Dayjs;
   dueDate: dayjs.Dayjs;
-  assignees: Assignee[];
+  assigneeIds: string[];
   description: string;
 }
 
@@ -58,10 +63,12 @@ const EditTask = () => {
 
   // 기본값 할당
   const defaultTask: Task = {
+      taskId:'',
       taskName: '',
       status: 0,
       startDate: '',
       dueDate: '',
+      projectId:'',
       itoProcessId: '',
       description: '',
       isRecurring: false,
@@ -82,7 +89,7 @@ const EditTask = () => {
   // const [description, setDescription] = useState<string>('');
     
   
-  const [projectId, setProjectId] = useState<string>('');
+  const [projectId, setProjectId] = useState<string>(task.projectId);
   // // userList의 타입을 User[]로 설정
   const [userList, setUserList] = useState<User[]>([]);
   const [projectList, setProjectList] = useState<Project[]>([]); // 여러 프로젝트 지원을 위한 배열
@@ -109,55 +116,67 @@ const EditTask = () => {
     if (task) {
       form.setFieldsValue({
         taskName: task.taskName,
-        processId: task.itoProcessId,
+        itoProcessId: task.itoProcessId,
+        projectId: task.projectId,
         startDate: dayjs(task.startDate),
         dueDate: dayjs(task.dueDate),
-        assignees: task.assignees, // 배열로 변환
+        assigneeIds: task.assignees.map((assignee) => assignee.assigneeId), // assigneeId만 추출
         description: task.description,
       });
+  
+      const fetchProjectList = async () => {
+        try {
+          const resProjectList = await getProjectsByProjectId([task.projectId]);
+          setProjectList(resProjectList);
+        } catch (error) {
+          console.error("Error fetching projects:", error);
+        }
+      };
+      fetchProjectList();
+  
+      const fetchUsers = async () => {
+        try {
+          const userListData = await getUserByProjectId(task.projectId);
+          console.log("Fetched userList:", userListData);
+          setUserList(userListData || []);
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        }
+      };
+      fetchUsers();
     }
-
-    
-     const userInfo = sessionStorage.getItem("userInfo")
-           ? JSON.parse(sessionStorage.getItem("userInfo") as string)
-           : null;
-  
-       if (userInfo && userInfo.projectId) {
-           //setProjectList(userInfo.projectId);
-           
-           
-           const fetchProjectList = async () => {
-             try {
-                 const resProjectList = await getProjectsByProjectId(userInfo.projectId);
-                 setProjectList(resProjectList);
-             } catch (error) {
-                 console.error("Error fetching users:", error);
-             }
-         };
-         fetchProjectList();
-       }
-  
-     if (projectId) {
-         const fetchUsers = async () => {
-             try {
-                 const userListData = await getUserByProjectId(projectId);
-                 
-                 setUserList(userListData || []);
-             } catch (error) {
-                 console.error("Error fetching users:", error);
-             }
-         };
-         fetchUsers();
-     }
-
-
   }, [task, form, projectId]);
   
   
   
 
-  const handleSubmit = (values: any) => {
-    console.log('Updated task:', values);
+  const handleSubmit = async (values: any) => {
+    
+
+    let updateData: Record<string, any> = {
+      ...values,
+      startDate: values.startDate.format('YYYY-MM-DD'),
+      dueDate: values.dueDate.format('YYYY-MM-DD'),
+    };
+
+    console.log('Updated task:', updateData);
+    console.log('taskId:', task.taskId);
+
+    try {
+      const response = await updateTask(task.taskId,updateData);
+      console.log(response)
+      if (response.code === 200){
+        //console.log("업무 수정 완료:", response);
+        toast.success(`${response.message}`)
+        navigate(-1); // 성공 시 이전 페이지로 이동
+      }else{
+        toast.error('업무 수정에 실패했습니다.')
+      }
+      
+  } catch (error) {
+      console.error("업무 수정 중 오류:", error);
+  }
+
     // 수정된 데이터를 서버로 전송하거나 상태 업데이트 등을 처리할 수 있습니다.
   };
 
@@ -242,18 +261,19 @@ const navigate = useNavigate(); // navigate 함수 사용
   labelAlign="left"
   style={{ margin: '0 auto', textAlign: 'left' }}
 
-  initialValues={{
-    taskName: task?.taskName,
-    processId: task?.itoProcessId,
-    startDate: task?.startDate ? dayjs(task.startDate) : null,
-    dueDate: task?.dueDate ? dayjs(task.dueDate) : null,
-    assignees: task?.assignees.map((assignee) => ({
-      userId: assignee.assigneeId,
-      name: assignee.assigneeName,
-      photo: assignee.assigneeProfile,
-    })),
-    description: task?.description,
-  }}
+  // initialValues={{
+  //   taskName: task?.taskName,
+  //   processId: task?.itoProcessId,
+  //   startDate: task?.startDate ? dayjs(task.startDate) : null,
+  //   dueDate: task?.dueDate ? dayjs(task.dueDate) : null,
+  //   projectId: task?.projectId,
+  //   assignees: task?.assignees.map((assignee) => ({
+  //     userId: assignee.assigneeId,
+  //     name: assignee.assigneeName,
+  //     photo: assignee.assigneeProfile,
+  //   })),
+  //   description: task?.description,
+  // }}
 >
   {/* 제목 */}
   <Form.Item
@@ -292,7 +312,7 @@ const navigate = useNavigate(); // navigate 함수 사용
   {/* ITO 프로세스 */}
   <Form.Item
     label="ITO 프로세스"
-    name="processId"
+    name="itoProcessId"
     rules={[{ required: true, message: '프로세스를 선택하세요.' }]}
   >
     <Select placeholder="프로세스를 선택하세요" size="large">
@@ -323,17 +343,38 @@ const navigate = useNavigate(); // navigate 함수 사용
   </Form.Item>
 
   {/* 담당자 */}
-  {/* 담당자 */}
-  <Form.Item
+  {/* <Form.Item
   label="담당자"
-  name="assignees" // `initialValues`에서 참조
+  name="assignees"
   rules={[{ required: true, message: '담당자를 선택하세요.' }]}
 >
   <Select
     mode="multiple"
     placeholder="담당자를 선택하세요"
     size="large"
-    optionLabelProp="label" // 선택된 항목 표시 스타일
+    optionLabelProp="label"
+    disabled={userList.length === 0} // userList 로딩 중에는 비활성화
+  >
+    {userList.map((user) => (
+      <Option key={user.userId} value={user.userId} label={user.name}>
+        <Space>
+          <Avatar src={`http://localhost:8080/${user.photo}`} />
+          {user.name}
+        </Space>
+      </Option>
+    ))}
+  </Select>
+</Form.Item> */}
+<Form.Item
+  label="담당자"
+  name="assigneeIds"
+  rules={[{ required: true, message: '담당자를 선택하세요.' }]}
+>
+  <Select
+    mode="multiple"
+    placeholder="담당자를 선택하세요"
+    size="large"
+    optionLabelProp="label"
   >
     {userList.map((user) => (
       <Option key={user.userId} value={user.userId} label={user.name}>

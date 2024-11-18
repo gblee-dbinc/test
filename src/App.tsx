@@ -29,6 +29,7 @@ import DetailTask from "./pages/DetailTask";
 import EditTask from './pages/EditTask';
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
+import RequireAuth from './components/RequireAuth';
 
 const { Sider, Content } = Layout;
 
@@ -214,7 +215,8 @@ const MainLayout: React.FC<{ collapsed: boolean; setCollapsed: React.Dispatch<Re
   };
 
   return (
-    <Layout style={{ height: '100vh' }}>
+    <RequireAuth>
+      <Layout style={{ height: '100vh' }}>
       <SideBar collapsed={collapsed} onCollapse={setCollapsed} onLogout={handleLogout} />
       <Layout>
         <Content style={{ backgroundColor: '#fff', overflow: 'auto' }}>
@@ -230,6 +232,7 @@ const MainLayout: React.FC<{ collapsed: boolean; setCollapsed: React.Dispatch<Re
         </Content>
       </Layout>
     </Layout>
+    </RequireAuth>
   );
 };
 

@@ -26,6 +26,7 @@ import { deleteTask } from "../api/task/deleteTask";
 import { toast } from "react-toastify";
 import { getTaskById } from "../api/task/getTaskById";
 import dayjs from "dayjs";
+import { updateTaskStatus } from '../api/task/updateTaskStatus';
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
@@ -117,16 +118,17 @@ const DetailTask: React.FC = () => {
     };
 
     const handleChangeStatusToComplete = async (taskId: string) => {
-        alert('change status');
+        try{
+          await updateTaskStatus(taskId);
+          window.location.reload(); // 페이지를 새로고침하여 변경 사항 반영
+        } catch (error) {
+          toast.error("Failed to update task status");
+      }
     }
 
     
     const handleDelete= async (taskId: string) => {
-        const isConfirmed = window.confirm("정말 삭제하시겠습니까?");
-        if (!isConfirmed) {
-            return;
-        }
-
+        
         try {
             await deleteTask(taskId);
             navigate(-1);
@@ -200,13 +202,10 @@ const DetailTask: React.FC = () => {
     };
 
     const handleDeleteComment = async (commentId: bigint, userId: string) => {
-        const isConfirmed = window.confirm("정말 삭제하시겠습니까?"); // 삭제 여부 확인
-        if (!isConfirmed) {
-            return; // 사용자가 취소한 경우 함수 종료
-        }
-    
+
         try {
             await deleteComment(commentId,userId); // taskId를 전달하여 삭제
+            toast.warn('댓글이 삭제되었습니다!')
             window.location.reload(); // 페이지를 새로고침하여 변경 사항 반영
         } catch (error) {
             console.error("Failed to delete comment:", error);
@@ -347,14 +346,19 @@ const DetailTask: React.FC = () => {
         <div style={{ marginTop: '20px', textAlign: 'right' }}>
         {
             task.status!==2&&task.assignees.some(assignee => assignee.assigneeId === userInfo.userId)?
-                <Button
+            <Popconfirm
+            title="완료 처리하시겠습니까?"
+            onConfirm={()=>handleChangeStatusToComplete(task.taskId)}
+        >
+           <Button
                 type="primary"
                 icon={<CheckOutlined />}
-                onClick={()=>handleChangeStatusToComplete(task.taskId)}
                 style={{ marginRight: '8px' }}
                 >
                 완료
                 </Button>
+        </Popconfirm>
+                
               :<></>
         }
           

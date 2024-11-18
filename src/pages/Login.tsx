@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Input, Button, Typography, Layout, Card, message } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { login } from "../api/auth/login";
 import { toast } from "react-toastify";
 
@@ -10,6 +10,7 @@ const { Title } = Typography;
 const Login: React.FC = () => {
     
     const navigate = useNavigate();
+    const location = useLocation();
 
     const onFinish = async (values: { userId: string; password: string }) => {
         try {
@@ -27,7 +28,10 @@ const Login: React.FC = () => {
                 sessionStorage.setItem('userInfo', JSON.stringify(response.data.userInfo));
 
                 toast.success(`${response.data.userInfo.name}님 안녕하세요!`);
-                navigate('/');
+                 // 로그인 성공 후 원래 페이지로 이동 (기본: '/')
+                const from = location.state?.from?.pathname || '/';
+                navigate(from, { replace: true });
+                //navigate('/');
             }
 
         } catch (error) {
